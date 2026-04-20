@@ -3,6 +3,7 @@ import { MdSearch, MdFilterList, MdAdd, MdRefresh } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
 import resourceService from '../../services/resourceService'
 import AssetCard from '../../components/AssetCard'
+import BookingForm from '../Bookings/BookingForm'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 
@@ -13,6 +14,7 @@ const AssetList = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterType, setFilterType] = useState('ALL')
   const [filterStatus, setFilterStatus] = useState('ALL')
+  const [bookingAsset, setBookingAsset] = useState(null)
 
   const fetchAssets = useCallback(async () => {
     setLoading(true)
@@ -143,11 +145,23 @@ const AssetList = () => {
                   asset={asset} 
                   onDelete={handleDelete}
                   onEdit={() => toast('Edit coming soon!')}
+                  onBook={() => setBookingAsset(asset)}
                 />
               </motion.div>
             ))}
           </AnimatePresence>
         </motion.div>
+      )}
+
+      {/* Booking Form Modal */}
+      {bookingAsset && (
+        <BookingForm 
+          resource={bookingAsset} 
+          onClose={() => setBookingAsset(null)}
+          onSuccess={() => {
+            fetchAssets()
+          }}
+        />
       )}
 
       <style dangerouslySetInnerHTML={{ __html: `
