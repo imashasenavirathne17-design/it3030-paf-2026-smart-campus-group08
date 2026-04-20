@@ -60,7 +60,7 @@ const AssetList = () => {
         </div>
         
         {isAdmin() && (
-          <button className="btn btn-primary" onClick={() => toast('Add Modal coming soon!')}>
+          <button className="btn btn-primary btn-pill shadow-sm" onClick={() => toast('Add Modal coming soon!')}>
             <MdAdd size={20} />
             Add Resource
           </button>
@@ -68,46 +68,48 @@ const AssetList = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="glass-card flex items-center gap-4 mb-8" style={{ padding: '16px 24px' }}>
+      <div className="card flex items-center gap-4 mb-8" style={{ padding: '12px 24px' }}>
         <div style={{ position: 'relative', flex: 1 }}>
           <MdSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input 
             type="text" 
             placeholder="Search by name, location, or type..." 
             className="form-input"
-            style={{ paddingLeft: '40px' }}
+            style={{ paddingLeft: '40px', border: 'none', background: 'var(--bg-app)' }}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <MdFilterList className="text-secondary" />
-          <select 
-            className="form-select" 
-            style={{ width: '140px' }}
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-          >
-            <option value="ALL">All Types</option>
-            <option value="ROOM">Rooms</option>
-            <option value="EQUIPMENT">Equipment</option>
-            <option value="VEHICLE">Vehicles</option>
-          </select>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <MdFilterList className="text-secondary" />
+            <select 
+              className="form-select" 
+              style={{ width: '140px', background: 'var(--bg-app)' }}
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+            >
+              <option value="ALL">All Types</option>
+              <option value="ROOM">Rooms</option>
+              <option value="EQUIPMENT">Equipment</option>
+              <option value="VEHICLE">Vehicles</option>
+            </select>
 
-          <select 
-            className="form-select" 
-            style={{ width: '140px' }}
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-          >
-            <option value="ALL">All Status</option>
-            <option value="AVAILABLE">Available</option>
-            <option value="OCCUPIED">Occupied</option>
-            <option value="MAINTENANCE">Maintenance</option>
-          </select>
+            <select 
+              className="form-select" 
+              style={{ width: '140px', background: 'var(--bg-app)' }}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="ALL">All Status</option>
+              <option value="AVAILABLE">Available</option>
+              <option value="OCCUPIED">Occupied</option>
+              <option value="MAINTENANCE">Maintenance</option>
+            </select>
+          </div>
           
-          <button className="btn-ghost" onClick={fetchAssets} style={{ padding: '10px' }}>
+          <button className="btn-icon" onClick={fetchAssets} title="Refresh">
             <MdRefresh size={20} className={loading ? 'spin' : ''} />
           </button>
         </div>
@@ -119,24 +121,24 @@ const AssetList = () => {
           <div className="spinner" />
         </div>
       ) : assets.length === 0 ? (
-        <div className="glass-card empty-state">
-          <div className="empty-state-icon">🏢</div>
-          <div className="empty-state-title">No resources found</div>
-          <div className="empty-state-desc">Try adjusting your filters or search terms.</div>
+        <div className="card empty-state" style={{ padding: '4rem 2rem' }}>
+          <div className="empty-state-icon" style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏢</div>
+          <div className="empty-state-title" style={{ fontSize: '1.25rem', fontWeight: 700 }}>No resources found</div>
+          <div className="empty-state-desc" style={{ color: 'var(--text-muted)' }}>Try adjusting your filters or search terms.</div>
         </div>
       ) : (
         <motion.div 
           layout
-          className="stats-grid" 
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}
+          className="grid gap-6" 
+          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}
         >
-          <AnimatePresence>
+          <AnimatePresence mode="popLayout">
             {assets.map((asset) => (
               <motion.div
                 key={asset.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
               >
                 <AssetCard 
@@ -153,6 +155,23 @@ const AssetList = () => {
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
+        .btn-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: var(--bg-app);
+          border: none;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .btn-icon:hover {
+          background: #eee;
+          color: var(--primary);
+        }
       `}} />
     </div>
   )
