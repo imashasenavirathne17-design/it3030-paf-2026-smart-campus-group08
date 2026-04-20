@@ -9,45 +9,20 @@ const Login = () => {
   return (
     <div className="flex items-center justify-center min-h-screen" style={{ 
       backgroundColor: 'var(--bg-app)', 
-      padding: '20px',
-      position: 'relative',
-      overflow: 'hidden'
+      padding: '20px'
     }}>
-      {/* Decorative background element */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        right: '10%',
-        width: '300px',
-        height: '300px',
-        background: 'rgba(139, 92, 246, 0.03)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        zIndex: 0
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '10%',
-        left: '10%',
-        width: '400px',
-        height: '400px',
-        background: 'rgba(20, 184, 166, 0.03)',
-        borderRadius: '50%',
-        filter: 'blur(100px)',
-        zIndex: 0
-      }} />
-
       <div className="card animate-slide-up" style={{ 
         maxWidth: '420px', 
         width: '100%', 
         padding: '3rem', 
         textAlign: 'center',
-        zIndex: 1,
-        borderRadius: '24px'
+        borderRadius: '24px',
+        background: '#fff',
+        boxShadow: 'var(--shadow-lg)'
       }}>
         <div style={{ 
           width: '64px', height: '64px', 
-          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          backgroundColor: 'rgba(139, 92, 246, 0.08)',
           borderRadius: '16px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 1.5rem',
@@ -57,10 +32,10 @@ const Login = () => {
         </div>
 
         <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '0.5rem', letterSpacing: '-0.025em' }}>
-          Welcome Back
+          Welcome back
         </h1>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '0.95rem' }}>
-          Smart Campus Operations Hub
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '2.5rem', fontSize: '0.95rem', fontWeight: 500 }}>
+          Manage your campus operations with ease.
         </p>
 
         <button 
@@ -69,7 +44,7 @@ const Login = () => {
           style={{ 
             height: '52px', 
             fontSize: '1rem',
-            boxShadow: '0 10px 20px -5px rgba(139, 92, 246, 0.3)'
+            boxShadow: '0 10px 20px -5px rgba(139, 92, 246, 0.25)'
           }}
         >
           <img 
@@ -82,7 +57,7 @@ const Login = () => {
         </button>
 
         <p style={{ marginTop: '2rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-          By signing in, you agree to our Terms of Service and Privacy Policy.
+          Only authorized university accounts can access this portal.
         </p>
       </div>
 
@@ -91,7 +66,7 @@ const Login = () => {
         fontSize: '0.75rem', color: 'var(--text-muted)',
         fontWeight: 500
       }}>
-        © 2026 Smart Campus Management.
+        © 2026 Smart Campus Hub. All rights reserved.
       </footer>
     </div>
   )
