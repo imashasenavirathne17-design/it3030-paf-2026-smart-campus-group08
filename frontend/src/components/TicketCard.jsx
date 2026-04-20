@@ -1,93 +1,143 @@
 import React from 'react'
-import { MdLocationOn, MdAccessTime, MdPerson, MdComment, MdImage } from 'react-icons/md'
+import { MdLocationOn, MdAccessTime, MdPerson, MdComment, MdImage, MdPriorityHigh } from 'react-icons/md'
 import { format } from 'date-fns'
-import { useAuth } from '../context/AuthContext'
 
 const TicketCard = ({ ticket, onClick }) => {
-  const getPriorityClass = (priority) => {
+  const getPriorityInfo = (priority) => {
     switch (priority) {
-      case 'CRITICAL': return 'priority-critical'
-      case 'HIGH': return 'priority-high'
-      case 'MEDIUM': return 'priority-medium'
-      case 'LOW': return 'priority-low'
-      default: return 'badge-gray'
+      case 'CRITICAL': return { label: 'CRITICAL', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
+      case 'HIGH': return { label: 'HIGH', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' }
+      case 'MEDIUM': return { label: 'MEDIUM', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' }
+      case 'LOW': return { label: 'LOW', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' }
+      default: return { label: priority, color: '#6b7280', bg: '#f3f4f6' }
     }
   }
 
-  const getStatusClass = (status) => {
+  const getStatusInfo = (status) => {
     switch (status) {
-      case 'OPEN': return 'status-open'
-      case 'IN_PROGRESS': return 'status-in_progress'
-      case 'RESOLVED': return 'status-resolved'
-      case 'CLOSED': return 'status-closed'
-      case 'REJECTED': return 'status-rejected'
-      default: return 'badge-gray'
+      case 'OPEN': return { label: 'Open', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' }
+      case 'IN_PROGRESS': return { label: 'In Progress', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.1)' }
+      case 'RESOLVED': return { label: 'Resolved', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' }
+      case 'CLOSED': return { label: 'Closed', color: '#6b7280', bg: '#f3f4f6' }
+      case 'REJECTED': return { label: 'Rejected', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' }
+      default: return { label: status, color: '#6b7280', bg: '#f3f4f6' }
     }
   }
+
+  const priority = getPriorityInfo(ticket.priority)
+  const status = getStatusInfo(ticket.status)
 
   return (
-    <div className="glass-card stat-card" onClick={onClick} style={{ 
+    <div className="card" onClick={onClick} style={{ 
       padding: '24px', 
       cursor: 'pointer',
       display: 'flex',
       flexDirection: 'column',
-      gap: '12px',
-      borderLeft: `4px solid ${
-        ticket.priority === 'CRITICAL' ? 'var(--coral-500)' :
-        ticket.priority === 'HIGH' ? 'var(--yellow-500)' :
-        'var(--teal-500)'
-      }`
+      gap: '16px',
+      transition: 'transform 0.2s, box-shadow 0.2s',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <div className="flex justify-between items-start">
-        <span className={`badge ${getPriorityClass(ticket.priority)}`}>
-          {ticket.priority}
-        </span>
-        <span className={`badge ${getStatusClass(ticket.status)}`}>
-          {ticket.status.replace('_', ' ')}
+      {/* Priority Indicator Stripe */}
+      <div style={{ 
+        position: 'absolute', 
+        left: 0, 
+        top: 0, 
+        bottom: 0, 
+        width: '4px', 
+        background: priority.color 
+      }} />
+
+      <div className="flex justify-between items-center">
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <span style={{ 
+            padding: '4px 8px', 
+            borderRadius: '6px', 
+            fontSize: '0.65rem', 
+            fontWeight: 800, 
+            background: priority.bg, 
+            color: priority.color,
+            letterSpacing: '0.05em'
+          }}>
+            {priority.label}
+          </span>
+          <span style={{ 
+            padding: '4px 8px', 
+            borderRadius: '6px', 
+            fontSize: '0.65rem', 
+            fontWeight: 800, 
+            background: status.bg, 
+            color: status.color,
+            letterSpacing: '0.05em'
+          }}>
+            {status.label.toUpperCase()}
+          </span>
+        </div>
+        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+          #{ticket.id?.slice(-6).toUpperCase() || 'N/A'}
         </span>
       </div>
 
       <div>
-        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '4px' }}>{ticket.title}</h3>
-        <p className="text-xs text-muted font-bold uppercase tracking-widest">{ticket.category}</p>
+        <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {ticket.category}
+        </p>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.3 }}>{ticket.title}</h3>
       </div>
 
-      <p className="text-sm text-secondary line-clamp-2" style={{ 
-        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' 
+      <p style={{ 
+        fontSize: '0.9rem', 
+        color: 'var(--text-secondary)', 
+        lineHeight: 1.5,
+        display: '-webkit-box', 
+        WebkitLineClamp: 2, 
+        WebkitBoxOrient: 'vertical', 
+        overflow: 'hidden' 
       }}>
         {ticket.description}
       </p>
 
-      <div className="flex flex-direction-column gap-2 mt-2">
+      <div className="grid grid-cols-2 gap-4 mt-auto">
         <div className="flex items-center gap-2 text-xs text-secondary">
-          <MdLocationOn className="text-teal" />
-          {ticket.location || 'Not specified'}
+          <MdLocationOn size={14} color="var(--primary)" />
+          <span className="truncate">{ticket.location || 'General'}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-secondary">
-          <MdAccessTime className="text-teal" />
-          {format(new Date(ticket.createdAt), 'MMM d, yyyy HH:mm')}
+          <MdAccessTime size={14} color="var(--primary)" />
+          <span>{format(new Date(ticket.createdAt), 'MMM d')}</span>
         </div>
       </div>
 
-      <div className="divider" style={{ margin: '8px 0', opacity: 0.3 }} />
+      <div style={{ height: '1px', background: '#f0f0f0', width: '100%' }} />
 
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
-           <MdPerson className="text-teal" />
-           <span className="text-xs font-bold text-secondary">{ticket.reportedByName}</span>
+           <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--bg-app)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+             <MdPerson size={14} color="var(--text-muted)" />
+           </div>
+           <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{ticket.reportedByName}</span>
         </div>
         
         <div className="flex gap-3">
           {ticket.imageUrls?.length > 0 && (
             <div className="flex items-center gap-1 text-xs text-muted">
-              <MdImage /> {ticket.imageUrls.length}
+              <MdImage size={14} />
+              <span>{ticket.imageUrls.length}</span>
             </div>
           )}
-          <div className="flex items-center gap-1 text-xs text-muted">
-            <MdComment /> View Details
+          <div className="flex items-center gap-1 text-xs text-primary font-bold">
+            <MdComment size={14} />
+            <span>Details</span>
           </div>
         </div>
       </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+      `}} />
     </div>
   )
 }

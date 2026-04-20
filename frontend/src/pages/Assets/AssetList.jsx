@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react'
 import { MdSearch, MdFilterList, MdAdd, MdRefresh } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -168,6 +169,20 @@ const AssetList = () => {
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
       `}} />
+=======
+import React from 'react'
+
+const AssetList = () => {
+  return (
+    <div className="fade-in">
+      <div className="page-header">
+        <h1 className="page-title">Facilities & Assets</h1>
+        <p className="page-subtitle">Manage campus spaces, equipment, and resources.</p>
+      </div>
+      <div className="glass-card loading-center">
+        <p className="text-secondary">Assets module coming soon...</p>
+      </div>
+>>>>>>> feature/authentication
     </div>
   )
 }

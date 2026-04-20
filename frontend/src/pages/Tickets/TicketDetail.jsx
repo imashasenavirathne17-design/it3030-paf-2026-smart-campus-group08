@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { 
   MdClose, MdLocationOn, MdAccessTime, MdPerson, MdSend, 
-  MdDelete, MdCheckCircle, MdAssignmentInd, MdImage 
+  MdDelete, MdCheckCircle, MdAssignmentInd, MdImage, MdComment 
 } from 'react-icons/md'
 import { format } from 'date-fns'
 import ticketService from '../../services/ticketService'
 import toast from 'react-hot-toast'
+import { motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 
 const TicketDetail = ({ ticketId, onClose, onUpdate }) => {
@@ -74,53 +75,112 @@ const TicketDetail = ({ ticketId, onClose, onUpdate }) => {
      <div className="modal-overlay"><div className="spinner" /></div>
   )
 
+  const getPriorityInfo = (priority) => {
+    switch (priority) {
+      case 'CRITICAL': return { color: '#ef4444', bg: '#fee2e2' }
+      case 'HIGH': return { color: '#f59e0b', bg: '#fef3c7' }
+      case 'LOW': return { color: '#10b981', bg: '#d1fae5' }
+      default: return { color: '#3b82f6', bg: '#dbeafe' }
+    }
+  }
+
+  const prioInfo = getPriorityInfo(ticket.priority)
+
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
-        <div className="modal-header">
-           <div className="flex items-center gap-3">
-              <span className={`badge ${
-                ticket.priority === 'CRITICAL' ? 'priority-critical' : 'priority-low'
-              }`}>{ticket.priority}</span>
-              <h3 className="modal-title">{ticket.title}</h3>
-           </div>
-           <button className="btn-ghost" onClick={onClose}><MdClose size={24} /></button>
+      <motion.div 
+        className="card" 
+        onClick={e => e.stopPropagation()} 
+        style={{ maxWidth: '900px', width: '95%', padding: '32px', position: 'relative', overflow: 'hidden' }}
+        initial={{ opacity: 0, y: 20, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 20, scale: 0.98 }}
+      >
+        <button 
+          onClick={onClose}
+          style={{ position: 'absolute', top: '24px', right: '24px', border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+        >
+          <MdClose size={24} />
+        </button>
+
+        <div className="flex gap-4 mb-6">
+          <span style={{ 
+            padding: '4px 12px', 
+            borderRadius: '20px', 
+            fontSize: '0.7rem', 
+            fontWeight: 800, 
+            background: prioInfo.bg, 
+            color: prioInfo.color,
+            textTransform: 'uppercase'
+          }}>
+            {ticket.priority} 
+          </span>
+          <span style={{ 
+            padding: '4px 12px', 
+            borderRadius: '20px', 
+            fontSize: '0.7rem', 
+            fontWeight: 800, 
+            background: 'var(--bg-app)', 
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase'
+          }}>
+            {ticket.status.replace('_', ' ')}
+          </span>
         </div>
 
-        <div className="flex gap-6 mt-4 md-flex-row flex-direction-column" style={{ display: 'flex' }}>
-          {/* Left Column: Info */}
-          <div style={{ flex: 1 }}>
-            <div className="glass-card mb-6" style={{ padding: '20px' }}>
-              <p className="text-secondary mb-4">{ticket.description}</p>
+        <h2 style={{ fontSize: '1.8rem', fontWeight: 800, marginBottom: '24px' }}>{ticket.title}</h2>
+
+        <div className="flex flex-col md:flex-row gap-8" style={{ display: 'flex' }}>
+          {/* Main Content */}
+          <div style={{ flex: 1.5 }}>
+            <div style={{ background: 'var(--bg-app)', padding: '24px', borderRadius: '20px', marginBottom: '32px' }}>
+              <p style={{ lineHeight: 1.6, color: 'var(--text-main)', marginBottom: '24px' }}>{ticket.description}</p>
               
-              <div className="flex flex-direction-column gap-3">
-                <div className="flex items-center gap-2 text-sm">
-                  <MdLocationOn className="text-teal" /> <strong>Location:</strong> {ticket.location}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="icon-badge"><MdLocationOn color="var(--primary)" /></div>
+                  <div className="flex flex-col">
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>LOCATION</span>
+                    <span style={{ fontWeight: 600 }}>{ticket.location}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MdPerson className="text-teal" /> <strong>Reported By:</strong> {ticket.reportedByName}
+                <div className="flex items-center gap-3">
+                  <div className="icon-badge"><MdPerson color="var(--primary)" /></div>
+                  <div className="flex flex-col">
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>REPORTED BY</span>
+                    <span style={{ fontWeight: 600 }}>{ticket.reportedByName}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <MdAccessTime className="text-teal" /> <strong>Reported At:</strong> {format(new Date(ticket.createdAt), 'PPpp')}
+                <div className="flex items-center gap-3">
+                  <div className="icon-badge"><MdAccessTime color="var(--primary)" /></div>
+                  <div className="flex flex-col">
+                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>REPORTED AT</span>
+                    <span style={{ fontWeight: 600 }}>{format(new Date(ticket.createdAt), 'PPpp')}</span>
+                  </div>
                 </div>
                 {ticket.assignedToName && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <MdAssignmentInd className="text-teal" /> <strong>Assigned To:</strong> {ticket.assignedToName}
+                  <div className="flex items-center gap-3">
+                    <div className="icon-badge"><MdAssignmentInd color="var(--primary)" /></div>
+                    <div className="flex flex-col">
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>ASSIGNED TO</span>
+                      <span style={{ fontWeight: 600 }}>{ticket.assignedToName}</span>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
 
             {ticket.imageUrls?.length > 0 && (
-              <div className="mb-6">
-                <h4 className="flex items-center gap-2 mb-3"><MdImage /> Evidence Photos</h4>
-                <div className="flex gap-2">
+              <div className="mb-8">
+                <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '16px' }}>Evidence Documentation</h4>
+                <div className="flex gap-4">
                   {ticket.imageUrls.map((url, i) => (
-                    <img 
+                    <motion.img 
+                      whileHover={{ scale: 1.05 }}
                       key={i} 
                       src={url} 
                       alt="evidence" 
-                      style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer' }}
+                      style={{ width: '140px', height: '140px', objectFit: 'cover', borderRadius: '16px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                       onClick={() => window.open(url, '_blank')}
                     />
                   ))}
@@ -128,38 +188,38 @@ const TicketDetail = ({ ticketId, onClose, onUpdate }) => {
               </div>
             )}
 
-            {/* Admin/Staff Controls */}
             {isStaff && (
-              <div className="glass-card" style={{ padding: '20px', border: '1px solid var(--teal-500)' }}>
-                <h4 className="mb-4">Internal Controls</h4>
+              <div>
+                <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '16px' }}>Staff Operations</h4>
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => handleUpdateStatus('IN_PROGRESS')} className="btn btn-ghost btn-sm">Set In Progress</button>
-                  <button onClick={() => handleUpdateStatus('RESOLVED')} className="btn btn-primary btn-sm">Mark Resolved</button>
-                  <button onClick={() => handleUpdateStatus('CLOSED')} className="btn btn-ghost btn-sm">Archive/Close</button>
-                  <button onClick={() => handleUpdateStatus('REJECTED')} className="btn btn-ghost btn-sm text-coral">Reject</button>
+                  <button onClick={() => handleUpdateStatus('IN_PROGRESS')} className="btn btn-pill bg-white text-muted border border-gray-100" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Processing</button>
+                  <button onClick={() => handleUpdateStatus('RESOLVED')} className="btn btn-primary btn-pill shadow-sm" style={{ padding: '8px 24px', fontSize: '0.85rem' }}>Mark Resolved</button>
+                  <button onClick={() => handleUpdateStatus('CLOSED')} className="btn btn-pill bg-white text-muted border border-gray-100" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Archive</button>
+                  <button onClick={() => handleUpdateStatus('REJECTED')} className="btn btn-pill bg-white text-coral border border-gray-100" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>Reject</button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Right Column: Comments */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
-            <h4 className="flex items-center gap-2 mb-3"><MdComment /> Activity Feed</h4>
+          {/* Activity Feed */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <h4 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '16px' }}>Activity Stream</h4>
             
-            <div className="glass-card" style={{ flex: 1, overflowY: 'auto', padding: '16px', marginBottom: '16px' }}>
+            <div style={{ flex: 1, maxHeight: '420px', overflowY: 'auto', marginBottom: '16px', paddingRight: '8px' }}>
               {comments.length === 0 ? (
-                <p className="text-center text-muted text-sm my-8">No comments yet.</p>
+                <div style={{ textAlign: 'center', opacity: 0.5, marginTop: '40px' }}>
+                  <MdComment size={40} style={{ marginBottom: '12px' }} />
+                  <p style={{ fontSize: '0.9rem' }}>No discussions yet.</p>
+                </div>
               ) : (
-                <div className="flex flex-direction-column gap-4">
+                <div className="flex flex-col gap-4">
                   {comments.map(comment => (
-                    <div key={comment.id} className="flex flex-direction-column gap-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-teal">{comment.userName}</span>
-                        <span className="text-xs text-muted">{format(new Date(comment.createdAt), 'MMM d, HH:mm')}</span>
+                    <div key={comment.id} className="comment-bubble">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-primary" style={{ fontSize: '0.85rem' }}>{comment.userName}</span>
+                        <span className="text-muted" style={{ fontSize: '0.65rem', fontWeight: 600 }}>{format(new Date(comment.createdAt), 'HH:mm • MMM d')}</span>
                       </div>
-                      <p className="text-sm glass-card" style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.03)' }}>
-                        {comment.content}
-                      </p>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>{comment.content}</p>
                     </div>
                   ))}
                 </div>
@@ -169,18 +229,44 @@ const TicketDetail = ({ ticketId, onClose, onUpdate }) => {
             <form onSubmit={handleAddComment} className="flex gap-2">
               <input 
                 className="form-input" 
-                placeholder="Write a comment..." 
+                style={{ background: 'var(--bg-app)', border: 'none', borderRadius: '16px', padding: '12px 16px' }}
+                placeholder="Type a message..." 
                 value={newComment}
                 onChange={e => setNewComment(e.target.value)}
                 disabled={submitting}
               />
-              <button type="submit" className="btn btn-primary" style={{ padding: '10px' }} disabled={submitting}>
-                <MdSend />
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                style={{ width: '48px', height: '48px', minWidth: '48px', padding: 0, borderRadius: '16px' }} 
+                disabled={submitting}
+              >
+                <MdSend size={20} />
               </button>
             </form>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .icon-badge {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        .comment-bubble {
+          background: #fff;
+          padding: 12px 16px;
+          border-radius: 16px;
+          border-left: 3px solid var(--primary);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+      `}} />
     </div>
   )
 }
