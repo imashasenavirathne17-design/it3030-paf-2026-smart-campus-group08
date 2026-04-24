@@ -1,0 +1,23 @@
+# Node
+node_modules/
+dist/
+.env
+
+# Java
+target/
+*.class
+.mvn/
+.settings/
+.classpath
+.project
+.factorypath
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
