@@ -1,0 +1,41 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@vitejs/plugin-react-swc": "^4.3.0",
+    "jsdom": "^29.0.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.9",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@fullcalendar/timegrid": "^6.1.20",
+    "@types/sockjs-client": "^1.5.4",
+    "@types/stompjs": "^2.3.10",
+    "axios": "^1.15.2",
+    "date-fns": "^4.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
+    "lucide-react": "^1.8.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.6.0",
+    "react-is": "^19.2.5",
+    "react-router-dom": "^7.14.2",
+    "recharts": "^3.8.1",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3"
+  }
+}
