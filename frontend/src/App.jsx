@@ -10,7 +10,7 @@ import Login from './pages/Login'
 import OAuth2Callback from './pages/OAuth2Callback'
 import Dashboard from './pages/Dashboard'
 import Assets from './pages/Assets/AssetList'
-import Bookings from './pages/Bookings/BookingHistory'
+import Bookings from './pages/bookings/Bookings' // Using my advanced Bookings module
 import Tickets from './pages/Tickets/TicketList'
 import Notifications from './pages/Notifications/NotificationPanel'
 
