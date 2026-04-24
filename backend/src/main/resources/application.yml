@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: smart-campus-hub
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/smart_campus_db}
+      database: smart_campus_db
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 15MB
+      enabled: true
+
+jwt:
+  secret: ${JWT_SECRET:smartcampus-secret-key-should-be-at-least-256-bits-long-for-hs256}
+  expiration: 86400000  # 24 hours in ms
+
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:3000}
+
+logging:
+  level:
+    com.smartcampus: DEBUG
+    org.springframework.security: INFO
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
