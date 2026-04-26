@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { notificationsAPI } from '../api/notifications'
-import { Bell, Check, CheckCheck, Calendar, Ticket, BookOpen, MessageSquare, Trash2, Search, ArrowRight, AlertTriangle, Send, X } from 'lucide-react'
+import { Bell, Check, CheckCheck, Calendar, Ticket, BookOpen, MessageSquare, Trash2, Search, ArrowRight, AlertTriangle, Send, X, Edit2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
@@ -31,6 +31,8 @@ export default function Notifications() {
   const [showBroadcastModal, setShowBroadcastModal] = useState(false)
   const [broadcastMsg, setBroadcastMsg] = useState('')
   const [broadcasting, setBroadcasting] = useState(false)
+  const [editingBroadcastId, setEditingBroadcastId] = useState(null)
+  const [errors, setErrors] = useState({})
 
   const load = () => notificationsAPI.getAll().then(setNotifications).catch(() => {}).finally(() => setLoading(false))
 
@@ -70,17 +72,33 @@ export default function Notifications() {
     }
   }
 
+  const validateForm = () => {
+    const newErrors = {}
+    if (!broadcastMsg || !broadcastMsg.trim()) newErrors.broadcastMsg = 'Announcement message is required'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSendBroadcast = async () => {
-    if (!broadcastMsg.trim()) return toast.error('Message is required')
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form')
+      return
+    }
     setBroadcasting(true)
     try {
-      await notificationsAPI.broadcast({ message: broadcastMsg })
-      toast.success('Broadcast sent to all users')
+      if (editingBroadcastId) {
+        await notificationsAPI.updateBroadcast(editingBroadcastId, { message: broadcastMsg })
+        toast.success('Broadcast updated for all users')
+      } else {
+        await notificationsAPI.broadcast({ message: broadcastMsg })
+        toast.success('Broadcast sent to all users')
+      }
       setShowBroadcastModal(false)
       setBroadcastMsg('')
-      load() // Reload to show the broadcast for the admin too
+      setEditingBroadcastId(null)
+      load() // Reload to show the changes
     } catch {
-      toast.error('Failed to send broadcast')
+      toast.error(editingBroadcastId ? 'Failed to update broadcast' : 'Failed to send broadcast')
     } finally {
       setBroadcasting(false)
     }
@@ -134,18 +152,17 @@ export default function Notifications() {
       </div>
 
       <div className="card" style={{ padding:'14px 18px', marginBottom:24, display:'flex', gap:12, alignItems:'center' }}>
-        <div style={{ position:'relative', flex:1 }}>
-          <Search size={16} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
+        <div className="input-wrapper" style={{ flex:1 }}>
+          <Search size={16} className="input-icon" />
           <input 
-            className="form-input" 
-            style={{ paddingLeft:36 }} 
+            className="form-input input-with-icon" 
             placeholder="Search activity..." 
             value={search} 
             onChange={e => setSearch(e.target.value)} 
           />
         </div>
         {isAdmin && (
-          <button onClick={() => setShowBroadcastModal(true)} className="btn btn-primary btn-sm">
+          <button onClick={() => { setShowBroadcastModal(true); setErrors({}); }} className="btn btn-primary btn-sm">
             <Send size={16}/> Send Broadcast
           </button>
         )}
@@ -217,7 +234,23 @@ export default function Notifications() {
                      </div>
                    )}
                    <div style={{ display: 'flex', gap: 4 }}>
-                     {!n.read && (
+                      {isAdmin && (n.type === 'SYSTEM_ALERT' || n.type === 'CRITICAL_ANNOUNCEMENT') && (
+                        <button 
+                          onClick={(e) => { 
+                             e.stopPropagation(); 
+                             setBroadcastMsg(n.message); 
+                             setEditingBroadcastId(n.broadcastId || n.id); 
+                             setErrors({});
+                             setShowBroadcastModal(true); 
+                           }} 
+                          className="btn btn-ghost btn-sm" 
+                          style={{ padding: 6, color: 'var(--primary)' }}
+                          title="Edit Broadcast"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      )}
+                      {!n.read && (
                       <button 
                         onClick={(e) => { e.stopPropagation(); markRead(n.id); }} 
                         className="btn btn-ghost btn-sm" 
@@ -248,25 +281,26 @@ export default function Notifications() {
         <div className="modal-overlay" onClick={() => setShowBroadcastModal(false)}>
           <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Send Broadcast Announcement</h3>
-              <button onClick={() => setShowBroadcastModal(false)} className="btn btn-ghost btn-icon"><X size={18}/></button>
+              <h3>{editingBroadcastId ? 'Edit Broadcast' : 'Send Broadcast Announcement'}</h3>
+              <button onClick={() => { setShowBroadcastModal(false); setEditingBroadcastId(null); setBroadcastMsg(''); }} className="btn btn-ghost btn-icon"><X size={18}/></button>
             </div>
             <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:16 }}>
               <div className="form-group">
                 <label className="form-label">Announcement Message</label>
                 <textarea 
-                  className="form-textarea" 
+                  className={`form-textarea ${errors.broadcastMsg ? 'error' : ''}`} 
                   value={broadcastMsg} 
-                  onChange={e => setBroadcastMsg(e.target.value)} 
+                  onChange={e => { setBroadcastMsg(e.target.value); if(errors.broadcastMsg) setErrors(err=>({...err, broadcastMsg:null})) }} 
                   placeholder="Enter the message to send to all users..."
                   rows={4}
                 />
+                {errors.broadcastMsg && <div className="form-error-msg">{errors.broadcastMsg}</div>}
               </div>
             </div>
             <div className="modal-footer">
-              <button onClick={() => setShowBroadcastModal(false)} className="btn btn-outline">Cancel</button>
+              <button onClick={() => { setShowBroadcastModal(false); setEditingBroadcastId(null); setBroadcastMsg(''); }} className="btn btn-outline">Cancel</button>
               <button onClick={handleSendBroadcast} className="btn btn-primary" disabled={broadcasting}>
-                {broadcasting ? <div className="spinner" /> : <><Send size={16}/> Send Broadcast</>}
+                {broadcasting ? <div className="spinner" /> : <>{editingBroadcastId ? <Check size={16}/> : <Send size={16}/>} {editingBroadcastId ? 'Save Changes' : 'Send Broadcast'}</>}
               </button>
             </div>
           </div>

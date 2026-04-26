@@ -8,6 +8,7 @@ export const notificationsAPI = {
   delete:       (id)  => api.delete(`/notifications/${id}`).then(r => r.data),
   deleteAll:    ()    => api.delete('/notifications/clear-all').then(r => r.data),
   broadcast:    (data)=> api.post('/notifications/broadcast', data).then(r => r.data),
+  updateBroadcast: (id, data) => api.put(`/notifications/broadcast/${id}`, data).then(r => r.data),
 }
 
 export const dashboardAPI = {

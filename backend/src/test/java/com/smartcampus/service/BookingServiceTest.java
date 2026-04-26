@@ -45,7 +45,7 @@ public class BookingServiceTest {
             .id("user-1").name("John Doe").email("john@example.com").role("STUDENT").build();
 
         resource = Resource.builder()
-            .id("res-1").name("Lab A").status(ResourceStatus.ACTIVE).build();
+            .id("res-1").name("Lab A").type("ROOM").status(ResourceStatus.ACTIVE).build();
 
         createRequest = new CreateBookingRequest();
         createRequest.setResourceId("res-1");

@@ -5,6 +5,7 @@ uri = "mongodb+srv://db_user:user%40123@it3030-paf-2026-smart-c.oi5o5p8.mongodb.
 client = pymongo.MongoClient(uri)
 db = client["smart_campus"]
 resources = db["resources"]
+resources.delete_many({})
 
 equipment = [
     { "name": "Sony VPL-PHZ60 Projector", "type": "Projector", "location": "IT Store", "capacity": 1, "status": "ACTIVE", "_class": "com.smartcampus.model.Resource", "createdAt": datetime.now(), "description": "4K Laser Projector" },

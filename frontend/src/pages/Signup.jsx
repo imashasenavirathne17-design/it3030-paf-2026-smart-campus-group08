@@ -85,14 +85,14 @@ export default function Signup() {
             </div>
 
             <form onSubmit={handleSubmit} style={styles.form}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Full Name</label>
-                <div style={styles.inputWrapper}>
-                  <User style={styles.inputIcon} size={18} />
+              <div className="form-group">
+                <label className="form-label">Full Name</label>
+                <div className="input-wrapper">
+                  <User className="input-icon" size={18} />
                   <input 
                     type="text" 
                     placeholder="John Doe"
-                    style={styles.input}
+                    className="form-input input-with-icon"
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
@@ -100,14 +100,14 @@ export default function Signup() {
                 </div>
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>University Email</label>
-                <div style={styles.inputWrapper}>
-                  <Mail style={styles.inputIcon} size={18} />
+              <div className="form-group">
+                <label className="form-label">University Email</label>
+                <div className="input-wrapper">
+                  <Mail className="input-icon" size={18} />
                   <input 
                     type="email" 
                     placeholder="john@university.edu"
-                    style={styles.input}
+                    className="form-input input-with-icon"
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
                     required
@@ -115,14 +115,14 @@ export default function Signup() {
                 </div>
               </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Password</label>
-                <div style={styles.inputWrapper}>
-                  <Lock style={styles.inputIcon} size={18} />
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <div className="input-wrapper">
+                  <Lock className="input-icon" size={18} />
                   <input 
                     type="password" 
                     placeholder="••••••••"
-                    style={styles.input}
+                    className="form-input input-with-icon"
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
@@ -268,35 +268,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: '#374151',
-  },
-  inputWrapper: {
-    position: 'relative',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: '14px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    color: '#9CA3AF',
-  },
-  input: {
-    width: '100%',
-    padding: '12px 14px 12px 44px',
-    borderRadius: '10px',
-    border: '1px solid #E5E7EB',
-    fontSize: '15px',
-    transition: 'all 0.2s',
-    outline: 'none',
   },
   divider: {
     margin: '24px 0',

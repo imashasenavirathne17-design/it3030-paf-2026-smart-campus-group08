@@ -13,4 +13,5 @@ public interface NotificationService {
     void deleteNotification(String notificationId, String userId);
     void deleteAllNotifications(String userId);
     void createBroadcastNotification(String message, boolean isCritical);
+    void updateBroadcastNotification(String broadcastId, String newMessage);
 }

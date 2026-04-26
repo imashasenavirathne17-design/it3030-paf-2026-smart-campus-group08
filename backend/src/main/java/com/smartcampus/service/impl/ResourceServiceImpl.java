@@ -36,6 +36,9 @@ public class ResourceServiceImpl implements ResourceService {
 
     @Override
     public Resource createResource(CreateResourceRequest req) {
+        if (resourceRepository.findByName(req.getName()).isPresent()) {
+            throw new RuntimeException("A resource with this name already exists: " + req.getName());
+        }
         Resource resource = Resource.builder()
             .name(req.getName()).type(req.getType())
             .location(req.getLocation()).capacity(req.getCapacity())
@@ -49,6 +52,14 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Resource updateResource(String id, CreateResourceRequest req) {
         Resource resource = getResourceById(id);
+        
+        // Check if name is being changed and if new name is already taken
+        if (!resource.getName().equals(req.getName())) {
+            if (resourceRepository.findByName(req.getName()).isPresent()) {
+                throw new RuntimeException("A resource with this name already exists: " + req.getName());
+            }
+        }
+
         resource.setName(req.getName());
         resource.setType(req.getType());
         resource.setLocation(req.getLocation());

@@ -63,4 +63,14 @@ public class NotificationController {
         }
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/broadcast/{broadcastId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> updateBroadcast(@PathVariable String broadcastId, @RequestBody Map<String, Object> request) {
+        String message = (String) request.get("message");
+        if (message != null && !message.trim().isEmpty()) {
+            notificationService.updateBroadcastNotification(broadcastId, message);
+        }
+        return ResponseEntity.ok().build();
+    }
 }

@@ -1,44 +1,45 @@
-import React from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
-import { ThemeProvider } from './context/ThemeContext'
-import MainLayout from './components/MainLayout'
-import ProtectedRoute from './components/ProtectedRoute'
+import ProtectedRoute from './components/layout/ProtectedRoute'
+import AppLayout from './components/layout/AppLayout'
 
-// Pages
-import Login from './pages/Login'
-import OAuth2Callback from './pages/OAuth2Callback'
-import Dashboard from './pages/Dashboard'
-import Assets from './pages/Assets/AssetList'
-import Bookings from './pages/bookings/Bookings' // Using my advanced Bookings module
-import Tickets from './pages/Tickets/TicketList'
-import Notifications from './pages/Notifications/NotificationPanel'
+import Landing     from './pages/Landing'
+import Login       from './pages/Login'
+import Signup      from './pages/Signup'
+import Dashboard   from './pages/Dashboard'
+import Resources   from './pages/resources/Resources'
+import Bookings    from './pages/bookings/Bookings'
+import Tickets     from './pages/tickets/Tickets'
+import TicketDetail from './pages/tickets/TicketDetail'
+import Notifications from './pages/Notifications'
+import UsersManagement from './pages/UsersManagement'
 
-const App = () => {
+export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <div className="app-bg" />
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<OAuth2Callback />} />
+          {/* Public */}
+          <Route path="/"       element={<Landing />} />
+          <Route path="/login"  element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/assets" element={<Assets />} />
-            <Route path="/bookings" element={<Bookings />} />
-            <Route path="/tickets" element={<Tickets />} />
-            <Route path="/notifications" element={<Notifications />} />
+          {/* Protected — inside AppLayout */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard"       element={<Dashboard />} />
+              <Route path="/resources"       element={<Resources />} />
+              <Route path="/bookings"        element={<Bookings />} />
+              <Route path="/tickets"         element={<Tickets />} />
+              <Route path="/tickets/:id"     element={<TicketDetail />} />
+              <Route path="/notifications"   element={<Notifications />} />
+              <Route path="/users"           element={<UsersManagement />} />
+            </Route>
           </Route>
 
-          {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AuthProvider>
-    </ThemeProvider>
+      </BrowserRouter>
+    </AuthProvider>
   )
 }
-
-export default App

@@ -7,12 +7,8 @@ import toast from 'react-hot-toast'
 
 const TYPES = ['ROOM', 'LAB', 'EQUIPMENT', 'HALL', 'FIELD', 'LIBRARY', 'OTHER']
 const LOCATIONS = [
-  'A101', 'A102', 'A103', 
-  'A201', 'A202', 'A203', 'A204', 'A205', 
-  'A301', 'A302', 'A303', 'A304', 'A305', 
-  'A401', 'A402', 'A403', 'A404', 'A405', 
-  'A501', 'A502', 'A503', 'A504', 'A505', 
-  'A601', 'A602', 'A603'
+  '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor', '6th Floor',
+  'IT Store', 'Media Room', 'Event Store', 'Other'
 ]
 
 export default function Resources() {
@@ -29,6 +25,7 @@ export default function Resources() {
   const [deleting, setDeleting]   = useState(null)
   const [saving, setSaving]       = useState(false)
   const [form, setForm] = useState({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' })
+  const [errors, setErrors]       = useState({})
 
   const load = () => resourcesAPI.getAll({ 
       type: filterType || undefined, 
@@ -38,12 +35,22 @@ export default function Resources() {
 
   useEffect(() => { load() }, [filterType, filterStatus, filterCapacity])
 
-  const openCreate = () => { setForm({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' }); setModal('create') }
-  const openEdit   = r  => { setForm({ ...r, capacity: String(r.capacity) }); setModal(r) }
-  const closeModal = () => { setModal(null) }
+  const openCreate = () => { setForm({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' }); setErrors({}); setModal('create') }
+  const openEdit   = r  => { setForm({ ...r, capacity: String(r.capacity) }); setErrors({}); setModal(r) }
+  const closeModal = () => { setModal(null); setErrors({}); }
+
+  const validateForm = () => {
+    const newErrors = {}
+    if (!form.name || !form.name.trim()) newErrors.name = 'Resource name is required'
+    if (!form.location) newErrors.location = 'Location is required'
+    if (!form.capacity) newErrors.capacity = 'Capacity is required'
+    else if (parseInt(form.capacity) <= 0) newErrors.capacity = 'Capacity must be greater than 0'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSave = async () => {
-    if (!form.name || !form.location || !form.capacity) { toast.error('Fill required fields'); return }
+    if (!validateForm()) { toast.error('Please fix the errors in the form'); return }
     setSaving(true)
     try {
       const payload = { ...form, capacity: parseInt(form.capacity) }
@@ -131,9 +138,9 @@ export default function Resources() {
 
       {/* Standardized Filters */}
       <div className="card" style={{ padding:'14px 18px', marginBottom:32, display:'flex', gap:12, flexWrap:'wrap', alignItems:'center' }}>
-        <div style={{ position:'relative', flex:1, minWidth:250 }}>
-          <Search size={16} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
-          <input className="form-input" style={{ paddingLeft:36 }} placeholder="Search by name or location..." value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="input-wrapper" style={{ flex:1, minWidth:250 }}>
+          <Search size={16} className="input-icon" />
+          <input className="form-input input-with-icon" placeholder="Search by name or location..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select className="form-select" style={{ width:'auto' }} value={filterType} onChange={e => setFilterType(e.target.value)}>
           <option value="">All Categories</option>
@@ -260,7 +267,8 @@ export default function Resources() {
             <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:20 }}>
               <div className="form-group">
                 <label className="form-label">Resource Name *</label>
-                <input className="form-input" value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Grand Auditorium" />
+                <input className={`form-input ${errors.name ? 'error' : ''}`} value={form.name} onChange={e => { setForm(f=>({...f,name:e.target.value})); if(errors.name) setErrors(err=>({...err, name:null})) }} placeholder="e.g. Grand Auditorium" />
+                {errors.name && <div className="form-error-msg">{errors.name}</div>}
               </div>
 
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
@@ -279,14 +287,16 @@ export default function Resources() {
                 </div>
                 <div className="form-group">
                   <label className="form-label">Location *</label>
-                  <select className="form-select" value={form.location} onChange={e => setForm(f=>({...f,location:e.target.value}))}>
+                  <select className={`form-select ${errors.location ? 'error' : ''}`} value={form.location} onChange={e => { setForm(f=>({...f,location:e.target.value})); if(errors.location) setErrors(err=>({...err, location:null})) }}>
                     <option value="" disabled>Choose Floor/Zone</option>
                     {LOCATIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                   </select>
+                  {errors.location && <div className="form-error-msg">{errors.location}</div>}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Capacity (Persons) *</label>
-                  <input className="form-input" type="number" min="1" value={form.capacity} onChange={e => setForm(f=>({...f,capacity:e.target.value}))} placeholder="100" />
+                  <input className={`form-input ${errors.capacity ? 'error' : ''}`} type="number" min="1" value={form.capacity} onChange={e => { setForm(f=>({...f,capacity:e.target.value})); if(errors.capacity) setErrors(err=>({...err, capacity:null})) }} placeholder="100" />
+                  {errors.capacity && <div className="form-error-msg">{errors.capacity}</div>}
                 </div>
               </div>
 

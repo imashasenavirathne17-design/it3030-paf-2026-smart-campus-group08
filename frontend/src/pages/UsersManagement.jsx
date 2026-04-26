@@ -11,6 +11,7 @@ export default function UsersManagement() {
   const [loading, setLoading] = useState(true)
   const [editUser, setEditUser] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     fetchUsers()
@@ -53,9 +54,16 @@ export default function UsersManagement() {
     }
   }
 
+  const validateForm = () => {
+    const newErrors = {}
+    if (!editUser.name || !editUser.name.trim()) newErrors.name = 'Full Name is required'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleUpdate = async () => {
-    if (!editUser.name) {
-      toast.error('Name is required')
+    if (!validateForm()) {
+      toast.error('Please fix the errors in the form')
       return
     }
     setSaving(true)
@@ -128,7 +136,8 @@ export default function UsersManagement() {
                 <td style={styles.td}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <select 
-                      style={styles.select}
+                      className="form-select"
+                      style={{ padding: '6px 12px', width: 'auto', fontSize: 13 }}
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value)}
                     >
@@ -138,7 +147,7 @@ export default function UsersManagement() {
                     </select>
                     
                     <button 
-                      onClick={() => setEditUser(user)}
+                      onClick={() => { setEditUser(user); setErrors({}); }}
                       className="btn btn-success" 
                       style={{ padding: '6px 16px', fontSize: 13, borderRadius: 999 }}
                     >
@@ -174,10 +183,11 @@ export default function UsersManagement() {
               <div className="form-group">
                 <label className="form-label">Full Name</label>
                 <input 
-                  className="form-input" 
+                  className={`form-input ${errors.name ? 'error' : ''}`} 
                   value={editUser.name} 
-                  onChange={e => setEditUser(prev => ({ ...prev, name: e.target.value }))} 
+                  onChange={e => { setEditUser(prev => ({ ...prev, name: e.target.value })); if(errors.name) setErrors(err=>({...err, name:null})) }} 
                 />
+                {errors.name && <div className="form-error-msg">{errors.name}</div>}
               </div>
               <div className="form-group">
                 <label className="form-label">Role</label>
