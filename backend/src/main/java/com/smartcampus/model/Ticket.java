@@ -26,7 +26,10 @@ public class Ticket {
     private String resolutionNotes;
     @Builder.Default private List<String> images = new ArrayList<>();
     @Builder.Default private List<Comment> comments = new ArrayList<>();
+    @Builder.Default private List<HistoryEntry> history = new ArrayList<>();
     private LocalDateTime slaDeadline;
+    private Integer rating;
+    private String feedback;
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 }

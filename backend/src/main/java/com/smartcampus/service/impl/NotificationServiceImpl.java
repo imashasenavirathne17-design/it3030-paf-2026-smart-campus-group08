@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import com.smartcampus.repository.UserRepository;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -81,16 +82,38 @@ public class NotificationServiceImpl implements NotificationService {
     public void createBroadcastNotification(String message, boolean isCritical) {
         List<com.smartcampus.model.User> allUsers = userRepository.findAll();
         NotificationType type = isCritical ? NotificationType.CRITICAL_ANNOUNCEMENT : NotificationType.SYSTEM_ALERT;
+        String broadcastId = UUID.randomUUID().toString();
         for (com.smartcampus.model.User user : allUsers) {
             Notification n = Notification.builder()
                 .userId(user.getId())
                 .type(type)
                 .message(message)
+                .broadcastId(broadcastId)
                 .build();
             n = notificationRepository.save(n);
             
             // Push real-time notification
             messagingTemplate.convertAndSendToUser(user.getId(), "/queue/notifications", n);
+        }
+    }
+
+    @Override
+    public void updateBroadcastNotification(String broadcastId, String newMessage) {
+        List<Notification> notifications = notificationRepository.findByBroadcastId(broadcastId);
+        if (notifications.isEmpty()) {
+            // Fallback: Try to find a single notification by ID (for legacy broadcasts)
+            notificationRepository.findById(broadcastId).ifPresent(n -> {
+                n.setMessage(newMessage);
+                notificationRepository.save(n);
+                messagingTemplate.convertAndSendToUser(n.getUserId(), "/queue/notifications", n);
+            });
+            return;
+        }
+        for (Notification n : notifications) {
+            n.setMessage(newMessage);
+            notificationRepository.save(n);
+            // Optionally push update via websocket too
+            messagingTemplate.convertAndSendToUser(n.getUserId(), "/queue/notifications", n);
         }
     }
 }

@@ -7,12 +7,8 @@ import toast from 'react-hot-toast'
 
 const TYPES = ['ROOM', 'LAB', 'EQUIPMENT', 'HALL', 'FIELD', 'LIBRARY', 'OTHER']
 const LOCATIONS = [
-  'A101', 'A102', 'A103', 
-  'A201', 'A202', 'A203', 'A204', 'A205', 
-  'A301', 'A302', 'A303', 'A304', 'A305', 
-  'A401', 'A402', 'A403', 'A404', 'A405', 
-  'A501', 'A502', 'A503', 'A504', 'A505', 
-  'A601', 'A602', 'A603'
+  '1st Floor', '2nd Floor', '3rd Floor', '4th Floor', '5th Floor', '6th Floor',
+  'IT Store', 'Media Room', 'Event Store', 'Other'
 ]
 
 export default function Resources() {
@@ -28,29 +24,53 @@ export default function Resources() {
   const [modal, setModal]         = useState(null)
   const [deleting, setDeleting]   = useState(null)
   const [saving, setSaving]       = useState(false)
+  const [images, setImages]       = useState([])
   const [form, setForm] = useState({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' })
+  const [errors, setErrors]       = useState({})
 
   const load = () => resourcesAPI.getAll({ 
       type: filterType || undefined, 
       status: filterStatus || undefined,
       capacity: filterCapacity ? parseInt(filterCapacity) : undefined 
-    }).then(setResources).catch(() => {}).finally(() => setLoading(false))
+    }).then(data => {
+      console.log('Resources Loaded:', data);
+      setResources(data);
+    }).catch(() => {}).finally(() => setLoading(false))
 
   useEffect(() => { load() }, [filterType, filterStatus, filterCapacity])
 
-  const openCreate = () => { setForm({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' }); setModal('create') }
-  const openEdit   = r  => { setForm({ ...r, capacity: String(r.capacity) }); setModal(r) }
-  const closeModal = () => { setModal(null) }
+  const openCreate = () => { setForm({ name:'', type:'ROOM', location:'', capacity:'', description:'', availabilityWindows:'', status:'ACTIVE' }); setImages([]); setErrors({}); setModal('create') }
+  const openEdit   = r  => { setForm({ ...r, capacity: String(r.capacity) }); setImages(r.images || []); setErrors({}); setModal(r) }
+  const closeModal = () => { setModal(null); setImages([]); setErrors({}); }
+
+  const validateForm = () => {
+    const newErrors = {}
+    if (!form.name || !form.name.trim()) newErrors.name = 'Resource name is required'
+    if (!form.location) newErrors.location = 'Location is required'
+    if (!form.capacity) newErrors.capacity = 'Capacity is required'
+    else if (parseInt(form.capacity) <= 0) newErrors.capacity = 'Capacity must be greater than 0'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSave = async () => {
-    if (!form.name || !form.location || !form.capacity) { toast.error('Fill required fields'); return }
+    if (!validateForm()) { toast.error('Please fix the errors in the form'); return }
     setSaving(true)
     try {
-      const payload = { ...form, capacity: parseInt(form.capacity) }
+      const payload = { ...form, capacity: parseInt(form.capacity), images }
       if (modal === 'create') { await resourcesAPI.create(payload); toast.success('Resource created!') }
       else                    { await resourcesAPI.update(modal.id, payload); toast.success('Resource updated!') }
       closeModal(); load()
     } catch {} finally { setSaving(false) }
+  }
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files).slice(0, 1)
+    files.forEach(file => {
+      const reader = new FileReader()
+      reader.onload = ev => setImages([ev.target.result])
+      reader.readAsDataURL(file)
+    })
   }
 
   const handleDelete = async (id) => {
@@ -131,9 +151,9 @@ export default function Resources() {
 
       {/* Standardized Filters */}
       <div className="card" style={{ padding:'14px 18px', marginBottom:32, display:'flex', gap:12, flexWrap:'wrap', alignItems:'center' }}>
-        <div style={{ position:'relative', flex:1, minWidth:250 }}>
-          <Search size={16} style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', color:'var(--text-muted)' }} />
-          <input className="form-input" style={{ paddingLeft:36 }} placeholder="Search by name or location..." value={search} onChange={e => setSearch(e.target.value)} />
+        <div className="input-wrapper" style={{ flex:1, minWidth:250 }}>
+          <Search size={16} className="input-icon" />
+          <input className="form-input input-with-icon" placeholder="Search by name or location..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <select className="form-select" style={{ width:'auto' }} value={filterType} onChange={e => setFilterType(e.target.value)}>
           <option value="">All Categories</option>
@@ -171,12 +191,16 @@ export default function Resources() {
           {filtered.map(r => (
             <div key={r.id} className="stat-card" style={{ padding: 0, overflow: 'hidden' }}>
               {/* Header Visual */}
-              <div style={{ height: 60, background: 'var(--bg-alt)', display: 'flex', alignItems: 'center', padding: '0 20px', borderBottom: '1px solid var(--border)' }}>
-                 <div className="stat-icon" style={{ width: 36, height: 36, background: 'var(--primary-light)' }}>
-                    <Building2 size={18} color="var(--primary-dark)" />
-                 </div>
-                 <div style={{ marginLeft: 'auto' }}>
-                    <span className={`badge ${r.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10 }}>
+              <div style={{ height: 140, background: 'var(--bg-alt)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, borderBottom: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
+                 {r.images && r.images.length > 0 ? (
+                   <img src={r.images[0]} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                 ) : (
+                   <div className="stat-icon" style={{ width: 48, height: 48, background: 'var(--primary-light)' }}>
+                      <Building2 size={24} color="var(--primary-dark)" />
+                   </div>
+                 )}
+                 <div style={{ position: 'absolute', top: 12, right: 12 }}>
+                    <span className={`badge ${r.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: 10, backdropFilter: 'blur(4px)', background: r.status === 'ACTIVE' ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)' }}>
                       {r.status.replace(/_/g,' ')}
                     </span>
                  </div>
@@ -252,53 +276,78 @@ export default function Resources() {
       {/* Modal */}
       {modal && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" style={{ maxWidth: 600 }} onClick={e => e.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: 820 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>{modal === 'create' ? 'Add New Facility' : 'Update Resource Details'}</h3>
               <button onClick={closeModal} className="btn btn-ghost btn-icon">✕</button>
             </div>
-            <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:20 }}>
-              <div className="form-group">
-                <label className="form-label">Resource Name *</label>
-                <input className="form-input" value={form.name} onChange={e => setForm(f=>({...f,name:e.target.value}))} placeholder="e.g. Grand Auditorium" />
-              </div>
-
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
-                <div className="form-group">
+            <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Resource Name *</label>
+                  <input className={`form-input ${errors.name ? 'error' : ''}`} value={form.name} onChange={e => { setForm(f=>({...f,name:e.target.value})); if(errors.name) setErrors(err=>({...err, name:null})) }} placeholder="e.g. Grand Auditorium" />
+                  {errors.name && <div className="form-error-msg">{errors.name}</div>}
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Category</label>
                   <select className="form-select" value={form.type} onChange={e => setForm(f=>({...f,type:e.target.value}))}>
                     {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <div className="form-group">
+              </div>
+
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Status</label>
                   <select className="form-select" value={form.status} onChange={e => setForm(f=>({...f,status:e.target.value}))}>
                     <option value="ACTIVE">Active / Available</option>
                     <option value="OUT_OF_SERVICE">Under Maintenance</option>
                   </select>
                 </div>
-                <div className="form-group">
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Location *</label>
-                  <select className="form-select" value={form.location} onChange={e => setForm(f=>({...f,location:e.target.value}))}>
+                  <select className={`form-select ${errors.location ? 'error' : ''}`} value={form.location} onChange={e => { setForm(f=>({...f,location:e.target.value})); if(errors.location) setErrors(err=>({...err, location:null})) }}>
                     <option value="" disabled>Choose Floor/Zone</option>
                     {LOCATIONS.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                   </select>
+                  {errors.location && <div className="form-error-msg">{errors.location}</div>}
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Capacity (Persons) *</label>
-                  <input className="form-input" type="number" min="1" value={form.capacity} onChange={e => setForm(f=>({...f,capacity:e.target.value}))} placeholder="100" />
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">{form.type === 'EQUIPMENT' ? 'Total Quantity *' : 'Capacity (Persons) *'}</label>
+                  <input className={`form-input ${errors.capacity ? 'error' : ''}`} type="number" min="1" value={form.capacity} onChange={e => { setForm(f=>({...f,capacity:e.target.value})); if(errors.capacity) setErrors(err=>({...err, capacity:null})) }} placeholder={form.type === 'EQUIPMENT' ? '10' : '100'} />
+                  {errors.capacity && <div className="form-error-msg">{errors.capacity}</div>}
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Availability Windows</label>
-                <input className="form-input" value={form.availabilityWindows} onChange={e => setForm(f=>({...f,availabilityWindows:e.target.value}))} placeholder="e.g. Mon-Fri 08:00-18:00" />
-              </div>
+              {form.type !== 'EQUIPMENT' && (
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Availability Windows</label>
+                  <input className="form-input" value={form.availabilityWindows} onChange={e => setForm(f=>({...f,availabilityWindows:e.target.value}))} placeholder="e.g. Mon-Fri 08:00-18:00" />
+                </div>
+              )}
 
-              <div className="form-group">
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Description</label>
-                <textarea className="form-textarea" rows={4} value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} placeholder="List amenities, rules, or equipment available..." />
+                <textarea className="form-textarea" rows={2} value={form.description} onChange={e => setForm(f=>({...f,description:e.target.value}))} placeholder="List amenities, rules, or equipment available..." />
               </div>
+
+              {form.type === 'EQUIPMENT' && (
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Equipment Image (Optional)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display:'none' }} id="asset-img-upload" />
+                    <label htmlFor="asset-img-upload" className="btn btn-outline" style={{ cursor:'pointer', padding: '8px 16px', fontSize: 13 }}>
+                      {images.length > 0 ? 'Change Image' : 'Upload Image'}
+                    </label>
+                    {images.length > 0 && (
+                      <div style={{ position:'relative' }}>
+                        <img src={images[0]} alt="" style={{ width:40, height:40, objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }} />
+                        <button onClick={() => setImages([])} style={{ position:'absolute', top:-6, right:-6, background:'var(--danger)', color:'white', border:'none', borderRadius:'50%', width:16, height:16, cursor:'pointer', fontSize:10, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="modal-footer">
               <button onClick={closeModal} className="btn btn-outline">Cancel</button>

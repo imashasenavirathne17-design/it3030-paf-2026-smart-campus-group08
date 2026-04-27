@@ -46,9 +46,10 @@ public class BookingServiceImpl implements BookingService {
             .findByResourceIdAndStatusAndStartTimeLessThanAndEndTimeGreaterThan(
                 req.getResourceId(), BookingStatus.APPROVED, req.getEndTime(), req.getStartTime());
         
-        boolean isEquipment = resource.getType().equals("Projector") || resource.getType().equals("Camera") || 
-                             resource.getType().equals("Laptop") || resource.getType().equals("Microphone") || 
-                             resource.getType().equals("Speaker") || resource.getType().equals("Extension Cord");
+        String type = resource.getType() != null ? resource.getType() : "";
+        boolean isEquipment = type.equals("Projector") || type.equals("Camera") || 
+                             type.equals("Laptop") || type.equals("Microphone") || 
+                             type.equals("Speaker") || type.equals("Extension Cord");
 
         if (isEquipment) {
             int totalBooked = overlapping.stream().mapToInt(b -> b.getQuantity() != null ? b.getQuantity() : 1).sum();

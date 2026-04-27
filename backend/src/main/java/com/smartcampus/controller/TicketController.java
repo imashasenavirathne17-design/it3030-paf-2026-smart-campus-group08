@@ -6,6 +6,7 @@ import com.smartcampus.dto.request.UpdateTicketRequest;
 import com.smartcampus.model.Ticket;
 import com.smartcampus.security.UserPrincipal;
 import com.smartcampus.service.TicketService;
+import com.smartcampus.model.TicketStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -77,6 +79,31 @@ public class TicketController {
     public ResponseEntity<Void> delete(@PathVariable String id,
                                        @AuthenticationPrincipal UserPrincipal principal) {
         ticketService.deleteTicket(id, principal);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/feedback")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Ticket> submitFeedback(@PathVariable String id,
+                                                 @RequestBody Map<String, Object> payload) {
+        Integer rating = (Integer) payload.get("rating");
+        String feedback = (String) payload.get("feedback");
+        return ResponseEntity.ok(ticketService.submitFeedback(id, rating, feedback));
+    }
+
+    @DeleteMapping("/bulk")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> bulkDelete(@RequestBody List<String> ids) {
+        ticketService.bulkDelete(ids);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/bulk/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> bulkUpdateStatus(@RequestBody Map<String, Object> payload) {
+        List<String> ids = (List<String>) payload.get("ids");
+        TicketStatus status = TicketStatus.valueOf((String) payload.get("status"));
+        ticketService.bulkUpdateStatus(ids, status);
         return ResponseEntity.noContent().build();
     }
 }

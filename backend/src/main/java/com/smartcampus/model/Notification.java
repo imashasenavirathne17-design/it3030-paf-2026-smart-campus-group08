@@ -13,6 +13,10 @@ public class Notification {
     private NotificationType type;
     private String message;
     private String referenceId;
+<<<<<<< HEAD
+=======
+    private String broadcastId;
+>>>>>>> feature/bookings
     @Builder.Default private boolean read = false;
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
 }

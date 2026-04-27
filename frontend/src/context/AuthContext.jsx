@@ -1,52 +1,51 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import api from '../services/api'
+import { authAPI } from '../api/auth'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
-  const [token, setToken] = useState(() => localStorage.getItem('sc_token'))
+export const AuthProvider = ({ children }) => {
+  const [user, setUser]       = useState(null)
+  const [token, setToken]     = useState(() => localStorage.getItem('sc_token'))
   const [loading, setLoading] = useState(true)
 
   const fetchCurrentUser = useCallback(async () => {
+    if (!token) { setLoading(false); return }
     try {
-      const res = await api.get('/users/me')
-      setUser(res.data)
+      const data = await authAPI.getMe()
+      setUser(data)
     } catch {
-      logout()
+      setToken(null)
+      setUser(null)
+      localStorage.removeItem('sc_token')
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [token])
 
-  useEffect(() => {
-    if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      fetchCurrentUser()
-    } else {
-      setLoading(false)
-    }
-  }, [token, fetchCurrentUser])
+  useEffect(() => { fetchCurrentUser() }, [fetchCurrentUser])
 
-  const login = (newToken) => {
-    localStorage.setItem('sc_token', newToken)
-    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
-    setToken(newToken)
+  const login = (authResponse) => {
+    localStorage.setItem('sc_token', authResponse.token)
+    setToken(authResponse.token)
+    setUser({
+      id: authResponse.id, name: authResponse.name,
+      email: authResponse.email, picture: authResponse.picture,
+      role: authResponse.role
+    })
+    return authResponse
   }
 
   const logout = () => {
     localStorage.removeItem('sc_token')
-    delete api.defaults.headers.common['Authorization']
     setToken(null)
     setUser(null)
+    if (window.google?.accounts?.id) window.google.accounts.id.disableAutoSelect()
   }
 
-  const isAdmin = () => user?.roles?.includes('ADMIN')
-  const isTechnician = () => user?.roles?.includes('TECHNICIAN')
-  const hasRole = (role) => user?.roles?.includes(role)
+  const updateUserRole = (role) => setUser(prev => prev ? { ...prev, role } : prev)
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, isAdmin, isTechnician, hasRole, fetchCurrentUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, updateUserRole, fetchCurrentUser }}>
       {children}
     </AuthContext.Provider>
   )

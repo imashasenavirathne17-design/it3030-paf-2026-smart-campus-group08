@@ -14,4 +14,5 @@ public class CreateResourceRequest {
     private String description;
     private String availabilityWindows;
     private ResourceStatus status = ResourceStatus.ACTIVE;
+    private java.util.List<String> images;
 }

@@ -23,6 +23,15 @@ public class TicketServiceImpl implements TicketService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    private void addHistory(Ticket ticket, UserPrincipal principal, String action) {
+        if (ticket.getHistory() == null) ticket.setHistory(new java.util.ArrayList<>());
+        ticket.getHistory().add(HistoryEntry.builder()
+            .userId(principal.getId())
+            .userName(principal.getName())
+            .action(action)
+            .build());
+    }
+
     @Override
     public List<Ticket> getAllTickets(UserPrincipal principal) {
         if (principal.getRole().equalsIgnoreCase("ADMIN") || principal.getRole().equalsIgnoreCase("TECHNICIAN")) {
@@ -44,7 +53,7 @@ public class TicketServiceImpl implements TicketService {
 
         LocalDateTime slaDeadline;
         switch (req.getPriority()) {
-            case CRITICAL: slaDeadline = LocalDateTime.now().plusHours(2); break;
+            case CRITICAL: slaDeadline = LocalDateTime.now().plusHours(4); break;
             case HIGH: slaDeadline = LocalDateTime.now().plusHours(24); break;
             case MEDIUM: slaDeadline = LocalDateTime.now().plusDays(3); break;
             case LOW: default: slaDeadline = LocalDateTime.now().plusDays(7); break;
@@ -58,6 +67,7 @@ public class TicketServiceImpl implements TicketService {
             .slaDeadline(slaDeadline)
             .submittedById(principal.getId()).submittedByName(principal.getName())
             .build();
+        addHistory(ticket, principal, "Ticket created");
         return ticketRepository.save(ticket);
     }
 
@@ -89,6 +99,7 @@ public class TicketServiceImpl implements TicketService {
             if (req.getStatus() != null && req.getStatus() != ticket.getStatus()) {
                 TicketStatus oldStatus = ticket.getStatus();
                 ticket.setStatus(req.getStatus());
+                addHistory(ticket, principal, "Status changed from " + oldStatus + " to " + req.getStatus());
                 
                 // Notify Submitter
                 if (!ticket.getSubmittedById().equals(principal.getId())) {
@@ -110,7 +121,11 @@ public class TicketServiceImpl implements TicketService {
                     .orElseThrow(() -> new RuntimeException("Technician not found"));
                 ticket.setAssignedToId(tech.getId());
                 ticket.setAssignedToName(tech.getName());
-                if (ticket.getStatus() == TicketStatus.OPEN) ticket.setStatus(TicketStatus.IN_PROGRESS);
+                addHistory(ticket, principal, "Assigned to " + tech.getName());
+                if (ticket.getStatus() == TicketStatus.OPEN) {
+                    ticket.setStatus(TicketStatus.IN_PROGRESS);
+                    addHistory(ticket, principal, "Status automatically updated to IN_PROGRESS upon assignment");
+                }
                 notificationService.createNotification(req.getAssignedToId(),
                     NotificationType.TICKET_ASSIGNED,
                     "You have been assigned ticket: " + ticket.getTitle(), id);
@@ -200,5 +215,29 @@ public class TicketServiceImpl implements TicketService {
         }
 
         ticketRepository.deleteById(id);
+    }
+
+    @Override
+    public Ticket submitFeedback(String ticketId, Integer rating, String feedback) {
+        Ticket ticket = getTicketById(ticketId);
+        ticket.setRating(rating);
+        ticket.setFeedback(feedback);
+        ticket.setUpdatedAt(LocalDateTime.now());
+        return ticketRepository.save(ticket);
+    }
+
+    @Override
+    public void bulkDelete(List<String> ticketIds) {
+        ticketRepository.deleteAllById(ticketIds);
+    }
+
+    @Override
+    public void bulkUpdateStatus(List<String> ticketIds, TicketStatus status) {
+        List<Ticket> tickets = ticketRepository.findAllById(ticketIds);
+        tickets.forEach(t -> {
+            t.setStatus(status);
+            t.setUpdatedAt(LocalDateTime.now());
+        });
+        ticketRepository.saveAll(tickets);
     }
 }
