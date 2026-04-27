@@ -1,8 +1,6 @@
+# 🚀 Smart Campus Operations Hub
 
-## 🚀 Smart Campus Operations Hub
-
-![Smart Campus Banner](smart_campus_banner_1777223313672.png)
-
+![Smart Campus Banner](landing_page.png)
 
 A state-of-the-art, unified ecosystem designed to streamline campus operations, resource management, and communication for modern educational institutions.
 
@@ -16,37 +14,29 @@ Built with a focus on **Visual Excellence** and **User Experience**, the system 
 
 ---
 
-
 ## ✨ Key Features
 
-🏢 Resource Management
- feature/authentication
- main
+### 🏢 Resource Management
 - Full inventory tracking of campus assets (labs, equipment, rooms).
 - Status monitoring (Active, Out of Service, Under Maintenance).
 - Detailed resource categorization and metadata.
 
-📅 Advanced Booking System
- main
+### 📅 Advanced Booking System
 - Seamless reservation of labs, meeting rooms, and specialized equipment.
 - Interactive **FullCalendar** integration for visual scheduling.
 - Conflict prevention and automated approval workflows.
 
-🎫 Smart Maintenance & Ticketing
- feature/authentication
- main
+### 🎫 Smart Maintenance & Ticketing
 - Integrated helpdesk for reporting facility issues.
 - **Kanban Board** interface for technicians to manage ticket lifecycles.
 - Priority-based sorting (Low, Medium, High, Critical).
 
-🔔 Real-time Notifications
- feature/authentication
- main
+### 🔔 Real-time Notifications
 - Instant alerts for booking confirmations and ticket status changes.
 - WebSocket-powered live updates without page refreshes.
 - Persistent notification center with read/unread tracking.
 
-📊 Operations Dashboard
+### 📊 Operations Dashboard
 - Real-time analytics and data visualization using **Recharts**.
 - Quick-view statistics for active bookings, open tickets, and resource availability.
 
@@ -68,9 +58,6 @@ Built with a focus on **Visual Excellence** and **User Experience**, the system 
 ## 📂 Project Structure
 
 ```text
-
- feature/authentication
- main
 smart-campus/
 ├── backend/                # Spring Boot Maven Project
 │   ├── src/main/java       # Java Source Code (Controllers, Services, Models)
@@ -83,7 +70,6 @@ smart-campus/
 │   ├── src/index.css       # Core Design System
 │   └── package.json        # Frontend Dependencies
 └── database/               # (Optional) Database scripts/seeding logic
- feature/bookings
 ```
 
 ---
@@ -97,10 +83,6 @@ smart-campus/
 - **MongoDB** (Atlas account or Local instance)
 
 ### 1. Backend Setup
-
-1. Backend Setup
- feature/authentication
- main
 1. Navigate to the backend directory:
    ```bash
    cd backend
@@ -113,11 +95,7 @@ smart-campus/
    mvn clean install
    mvn spring-boot:run
    ```
- feature/bookings
    *The backend will be available at `http://localhost:8080`*
-
-
-
 
 ### 2. Frontend Setup
 1. Navigate to the frontend directory:
@@ -156,11 +134,10 @@ Developed by **Group 08** for *IT3030 – Smart Campus Project*
 | Student ID | Name |
 |------------|------|
 | IT23741546 | H.A.D.M. Hathurusinghe |
-| IT2362430  | W.M.R.S.K. Wijesinghe |
+| IT23624030 | W.M.R.S.K. Wijesinghe |
 | IT23609426 | M.A.D.Y. Dharmasena |
 | IT23636392 | B.S.M.C.I. Senavirathne |
+
 ---
 
 *Built with ❤️ for a smarter campus experience.*
-
- 
