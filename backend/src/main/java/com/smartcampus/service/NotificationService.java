@@ -13,5 +13,12 @@ public interface NotificationService {
     void deleteNotification(String notificationId, String userId);
     void deleteAllNotifications(String userId);
     void createBroadcastNotification(String message, boolean isCritical);
+ feature/bookings
     void updateBroadcastNotification(String broadcastId, String newMessage);
+
+ HEAD
+
+    void updateBroadcastNotification(String broadcastId, String newMessage);
+ feature/bookings
+ main
 }
