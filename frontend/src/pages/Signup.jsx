@@ -6,19 +6,21 @@ import {
   Zap, 
   Mail,
   Lock,
-  Eye,
-  EyeOff,
+  User,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import GoogleLoginButton from '../components/auth/GoogleLoginButton'
 
-export default function Login() {
+export default function Signup() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  })
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = (e) => {
@@ -26,7 +28,7 @@ export default function Login() {
     setLoading(true)
     setTimeout(() => {
       setLoading(false)
-      navigate('/dashboard')
+      navigate('/login')
     }, 1500)
   }
 
@@ -39,35 +41,38 @@ export default function Login() {
         <div style={styles.visualSide}>
           <div style={styles.visualContent}>
             <div style={styles.badge}>
-              <Sparkles size={14} /> Higher Education OS
+              <Sparkles size={14} /> Join the Community
             </div>
             <h1 style={styles.visualTitle}>
-              Welcome back to <br/>
-              <span style={{ color: '#87CEEB' }}>Smart Campus</span>
+              Start your journey <br/>
+              with <span style={{ color: '#87CEEB' }}>Smart Campus</span>
             </h1>
             <p style={styles.visualSub}>
-              Access your unified command center for campus resources, 
-              scheduling, and maintenance tracking.
+              Create your account to start managing bookings, resources, 
+              and maintenance requests in one unified platform.
             </p>
 
             <div style={styles.featureList}>
               {[
-                { icon: Building2, text: 'Real-time resource availability' },
-                { icon: ShieldCheck, text: 'Secure role-based access' },
-                { icon: Zap, text: 'Instant status notifications' }
+                { title: 'Unified Experience', desc: 'Everything you need in one powerful dashboard.' },
+                { title: 'Stay Notified', desc: 'Real-time updates on all your requests and activities.' },
+                { title: 'Collaborative Hub', desc: 'Easily communicate with campus staff and administration.' }
               ].map((item, i) => (
                 <div key={i} style={styles.featureItem}>
-                  <div style={styles.featureIcon}>
-                    <item.icon size={20} color="#87CEEB" />
+                  <div style={styles.checkIcon}>
+                    <CheckCircle2 size={20} color="#87CEEB" />
                   </div>
-                  <span style={styles.featureText}>{item.text}</span>
+                  <div>
+                    <h4 style={styles.featureTitle}>{item.title}</h4>
+                    <p style={styles.featureDesc}>{item.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
           
           <div style={styles.visualFooter}>
-            <p>© 2026 Smart Campus Hub. Version 4.2.0</p>
+            <p>© 2026 Smart Campus Hub. All rights reserved.</p>
           </div>
         </div>
 
@@ -75,48 +80,53 @@ export default function Login() {
         <div style={styles.formSide}>
           <div style={styles.formContainer}>
             <div style={styles.formHeader}>
-              <h2 style={styles.formTitle}>Sign In</h2>
-              <p style={styles.formSub}>Enter your credentials to access your account</p>
+              <h2 style={styles.formTitle}>Create Account</h2>
+              <p style={styles.formSub}>Join hundreds of students using Smart Campus</p>
             </div>
 
             <form onSubmit={handleSubmit} style={styles.form}>
               <div className="form-group">
-                <label className="form-label">Email Address</label>
+                <label className="form-label">Full Name</label>
                 <div className="input-wrapper">
-                  <Mail className="input-icon" size={18} />
+                  <User className="input-icon" size={18} />
                   <input 
-                    type="email" 
-                    placeholder="name@university.edu"
+                    type="text" 
+                    placeholder="John Doe"
                     className="form-input input-with-icon"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
                   />
                 </div>
               </div>
 
               <div className="form-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <label className="form-label">Password</label>
-                  <a href="#" style={styles.forgotPass}>Forgot password?</a>
+                <label className="form-label">University Email</label>
+                <div className="input-wrapper">
+                  <Mail className="input-icon" size={18} />
+                  <input 
+                    type="email" 
+                    placeholder="john@university.edu"
+                    className="form-input input-with-icon"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    required
+                  />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Password</label>
                 <div className="input-wrapper">
                   <Lock className="input-icon" size={18} />
                   <input 
-                    type={showPassword ? "text" : "password"} 
+                    type="password" 
                     placeholder="••••••••"
                     className="form-input input-with-icon"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
                     required
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="input-action-btn"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                 </div>
               </div>
 
@@ -126,18 +136,18 @@ export default function Login() {
                 style={{ width: '100%', marginTop: '8px' }}
                 disabled={loading}
               >
-                {loading ? 'Authenticating...' : 'Sign In'} <ChevronRight size={18} />
+                {loading ? 'Creating Account...' : 'Create Account'} <ChevronRight size={18} />
               </button>
             </form>
 
             <div style={styles.divider}>
-              <span style={styles.dividerText}>or continue with</span>
+              <span style={styles.dividerText}>or sign up with</span>
             </div>
 
-            <GoogleLoginButton text="signin_with" width="400" />
+            <GoogleLoginButton text="signup_with" width="400" />
 
             <p style={styles.footerText}>
-              Don't have an account? <span onClick={() => navigate('/signup')} style={styles.linkText}>Create an account</span>
+              Already have an account? <span onClick={() => navigate('/login')} style={styles.linkText}>Sign In</span>
             </p>
           </div>
         </div>
@@ -203,28 +213,25 @@ const styles = {
   featureList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '24px',
+    gap: '32px',
   },
   featureItem: {
     display: 'flex',
-    alignItems: 'center',
     gap: '16px',
   },
-  featureIcon: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    background: '#fff',
-    border: '1px solid #E5E7EB',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+  checkIcon: {
+    marginTop: '4px',
   },
-  featureText: {
-    fontSize: '16px',
-    fontWeight: 500,
+  featureTitle: {
+    fontSize: '17px',
+    fontWeight: 700,
     color: '#374151',
+    marginBottom: '4px',
+  },
+  featureDesc: {
+    fontSize: '14px',
+    color: '#9CA3AF',
+    lineHeight: 1.5,
   },
   visualFooter: {
     marginTop: 'auto',
@@ -261,12 +268,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-  },
-  forgotPass: {
-    fontSize: '13px',
-    color: '#87CEEB',
-    textDecoration: 'none',
-    fontWeight: 500,
   },
   divider: {
     margin: '24px 0',
