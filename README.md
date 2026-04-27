@@ -1,7 +1,4 @@
- feature/bookings
-# 🚀 Smart Campus Operations Hub
 
- main
 # 🚀 Smart Campus Operations Hub
 
 ![Smart Campus Banner](smart_campus_banner_1777223313672.png)
