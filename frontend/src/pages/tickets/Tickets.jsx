@@ -360,64 +360,73 @@ export default function Tickets() {
       )}
 
       {/* Create Modal */}
+      {/* Create Modal */}
        {modal && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
-          <div className="modal" style={{ maxWidth:560 }} onClick={e => e.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: 820 }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
                <h3>{modal === 'create' ? 'Report New Issue' : 'Edit Issue'}</h3>
                <button onClick={() => setModal(null)} className="btn btn-ghost btn-icon">✕</button>
             </div>
-            <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:16 }}>
-              <div className="form-group">
-                <label className="form-label">Title *</label>
-                <input className={`form-input ${errors.title ? 'error' : ''}`} value={form.title} onChange={e => { setForm(f=>({...f,title:e.target.value})); if(errors.title) setErrors(err=>({...err, title:null})) }} placeholder="Brief issue description" />
-                {errors.title && <div className="form-error-msg">{errors.title}</div>}
-              </div>
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-                <div className="form-group">
+            <div className="modal-body" style={{ display:'flex', flexDirection:'column', gap:12 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Title *</label>
+                  <input className={`form-input ${errors.title ? 'error' : ''}`} value={form.title} onChange={e => { setForm(f=>({...f,title:e.target.value})); if(errors.title) setErrors(err=>({...err, title:null})) }} placeholder="Brief issue description" />
+                  {errors.title && <div className="form-error-msg">{errors.title}</div>}
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Category</label>
                   <select className="form-select" value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))}>
                     {CATEGORIES.map(c => <option key={c}>{c}</option>)}
                   </select>
                 </div>
-                <div className="form-group">
+              </div>
+
+              <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap: 16 }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
                   <label className="form-label">Priority</label>
                   <select className="form-select" value={form.priority} onChange={e => setForm(f=>({...f,priority:e.target.value}))}>
                     {PRIORITIES.map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Location</label>
+                  <select className="form-select" value={form.location} onChange={e => setForm(f=>({...f,location:e.target.value}))}>
+                    <option value="">Select Location</option>
+                    {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">Preferred Contact</label>
+                  <input className="form-input" value={form.preferredContactDetails} onChange={e => setForm(f=>({...f,preferredContactDetails:e.target.value}))} placeholder="Phone or Email" />
+                </div>
               </div>
-              <div className="form-group">
-                 <label className="form-label">Location</label>
-                 <select className="form-select" value={form.location} onChange={e => setForm(f=>({...f,location:e.target.value}))}>
-                   <option value="">Select Location</option>
-                   {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
-                   <option value="Other">Other</option>
-                 </select>
-               </div>
-              <div className="form-group">
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Description *</label>
-                <textarea className={`form-textarea ${errors.description ? 'error' : ''}`} rows={4} value={form.description} onChange={e => { setForm(f=>({...f,description:e.target.value})); if(errors.description) setErrors(err=>({...err, description:null})) }} placeholder="Describe the issue in detail..." />
+                <textarea className={`form-textarea ${errors.description ? 'error' : ''}`} rows={3} value={form.description} onChange={e => { setForm(f=>({...f,description:e.target.value})); if(errors.description) setErrors(err=>({...err, description:null})) }} placeholder="Describe the issue in detail..." />
                 {errors.description && <div className="form-error-msg">{errors.description}</div>}
               </div>
-              <div className="form-group">
-                <label className="form-label">Preferred Contact Details (Phone/Email)</label>
-                <input className="form-input" value={form.preferredContactDetails} onChange={e => setForm(f=>({...f,preferredContactDetails:e.target.value}))} placeholder="e.g. Call 0771234567 or email user@test.com" />
-              </div>
-              <div className="form-group">
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="form-label">Images (max 3)</label>
-                <input type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display:'none' }} id="img-upload" />
-                <label htmlFor="img-upload" className="btn btn-outline" style={{ cursor:'pointer', justifyContent:'flex-start' }}>📎 Attach Images ({images.length}/3)</label>
-                {images.length > 0 && (
-                  <div style={{ display:'flex', gap:8, marginTop:8 }}>
-                    {images.map((img,i) => (
-                      <div key={i} style={{ position:'relative' }}>
-                        <img src={img} alt="" style={{ width:64, height:64, objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }} />
-                        <button onClick={() => setImages(prev => prev.filter((_,j) => j!==i))} style={{ position:'absolute', top:-6, right:-6, background:'var(--danger)', color:'white', border:'none', borderRadius:'50%', width:18, height:18, cursor:'pointer', fontSize:11, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} style={{ display:'none' }} id="img-upload" />
+                  <label htmlFor="img-upload" className="btn btn-outline" style={{ cursor:'pointer', padding: '10px 20px' }}>📎 Attach Images ({images.length}/3)</label>
+                  
+                  {images.length > 0 && (
+                    <div style={{ display:'flex', gap:8 }}>
+                      {images.map((img,i) => (
+                        <div key={i} style={{ position:'relative' }}>
+                          <img src={img} alt="" style={{ width:40, height:40, objectFit:'cover', borderRadius:8, border:'1px solid var(--border)' }} />
+                          <button onClick={() => setImages(prev => prev.filter((_,j) => j!==i))} style={{ position:'absolute', top:-6, right:-6, background:'var(--danger)', color:'white', border:'none', borderRadius:'50%', width:16, height:16, cursor:'pointer', fontSize:10, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
              <div className="modal-footer">

@@ -71,11 +71,7 @@ export default function Bookings() {
   const [rejectModal, setRejectModal] = useState(null) // ID of booking to reject
   const [rejectReason, setRejectReason] = useState('')
 
-  const parseDate = (d) => {
-    if (!d) return new Date();
-    const date = new Date(d);
-    return isNaN(date.getTime()) ? new Date() : date;
-  };
+
 
   const getAvailableStock = (resourceId, start, end, excludeId = null) => {
     const resource = resources.find(r => r.id === resourceId);
@@ -379,7 +375,6 @@ export default function Bookings() {
       payload.quantity = parseInt(form.quantity || 1)
       payload.notes = `Name: ${form.fullName}\nContact: ${form.contactNumber}\nEmail: ${form.email}\nQty: ${form.quantity}\nTerms Accepted: Yes\n\n${form.notes || ''}`
     } else {
-
       payload.startTime = new Date(form.startTime).toISOString()
       payload.endTime = new Date(form.endTime).toISOString()
     }
@@ -611,19 +606,16 @@ export default function Bookings() {
                   {category === 'ROOMS' ? (
                     <>
                       <option value="All">All Floors</option>
-                      <option value="1st Floor">1st Floor</option>
-                      <option value="2nd Floor">2nd Floor</option>
-                      <option value="3rd Floor">3rd Floor</option>
-                      <option value="4th Floor">4th Floor</option>
-                      <option value="5th Floor">5th Floor</option>
-                      <option value="6th Floor">6th Floor</option>
+                      {[...new Set(resources.filter(r => r.type !== 'EQUIPMENT').map(r => r.location))].sort().map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
                     </>
                   ) : (
                     <>
                       <option value="All">All Locations</option>
-                      <option value="IT Store">IT Store</option>
-                      <option value="Media Room">Media Room</option>
-                      <option value="Event Store">Event Store</option>
+                      {[...new Set(resources.filter(r => r.type === 'EQUIPMENT').map(r => r.location))].sort().map(loc => (
+                        <option key={loc} value={loc}>{loc}</option>
+                      ))}
                     </>
                   )}
                 </select>
@@ -639,17 +631,15 @@ export default function Bookings() {
                   <option value="All Types">All Types</option>
                   {category === 'ROOMS' ? (
                     <>
-                      <option value="Lecture Hall">Lecture Hall</option>
-                      <option value="Laboratory">Laboratory</option>
+                      {[...new Set(resources.filter(r => r.type !== 'EQUIPMENT').map(r => r.type))].sort().map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
                     </>
                   ) : (
                     <>
-                      <option value="Projector">Projector</option>
-                      <option value="Camera">Camera</option>
-                      <option value="Laptop">Laptop</option>
-                      <option value="Microphone">Microphone</option>
-                      <option value="Speaker">Speaker</option>
-                      <option value="Extension Cord">Extension Cord</option>
+                      {[...new Set(resources.filter(r => r.type === 'EQUIPMENT').map(r => r.name))].sort().map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
                     </>
                   )}
                 </select>
@@ -661,12 +651,18 @@ export default function Bookings() {
           {category === 'ROOMS' && (
             <div style={{ background: '#ffffff', borderRadius: '20px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflowX: 'auto' }}>
               <div style={{ minWidth: '800px' }}>
-                <div style={{ display: 'flex', gap: '24px', marginBottom: '36px' }}>
+                <div style={{ display: 'flex', gap: '24px', marginBottom: '36px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
                     <div style={{ width: '18px', height: '18px', background: '#3b82f6', borderRadius: '4px' }} /> Available
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
+                    <div style={{ width: '18px', height: '18px', background: GRID_COLORS.PENDING, borderRadius: '4px' }} /> Pending Request
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
                     <div style={{ width: '18px', height: '18px', background: '#f1f5f9', borderRadius: '4px' }} /> Booked
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: '#64748b', fontWeight: '600' }}>
+                    <div style={{ width: '18px', height: '18px', background: GRID_COLORS.MAINTENANCE, borderRadius: '4px' }} /> Maintenance
                   </div>
                 </div>
 
@@ -714,8 +710,14 @@ export default function Bookings() {
                               (bStart <= slotStart && bEnd >= slotEnd)
                           })
 
+                          let bgColor = '#3b82f6'; // Default Available
+                          if (isPast) bgColor = GRID_COLORS.PAST;
+                          if (isMaintenance) bgColor = GRID_COLORS.MAINTENANCE;
+                          if (booking) {
+                            bgColor = booking.status === 'PENDING' ? GRID_COLORS.PENDING : '#f1f5f9';
+                          }
+
                           const isAvailable = !isPast && !booking && !isMaintenance;
-                          const bgColor = isAvailable ? '#3b82f6' : '#f1f5f9';
 
                           let title = `Available at ${h}:00`
                           if (isPast) title = 'Past Time'
@@ -796,9 +798,9 @@ export default function Bookings() {
 
               {(() => {
                 const filteredEquip = resources.filter(r => {
-                  const isEquip = ['Projector', 'Camera', 'Laptop', 'Microphone', 'Speaker', 'Extension Cord'].includes(r.type);
+                  const isEquip = r.type === 'EQUIPMENT';
                   if (!isEquip) return false;
-                  if (selectedType !== 'All Types' && r.type !== selectedType) return false;
+                  if (selectedType !== 'All Types' && r.name !== selectedType) return false;
                   if (selectedLocation !== 'All' && r.location !== selectedLocation) return false;
                   if (equipSearch && !r.name.toLowerCase().includes(equipSearch.toLowerCase())) return false;
                   
@@ -840,8 +842,12 @@ export default function Bookings() {
                       return (
                         <div key={r.id} style={{ background: '#ffffff', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', gap: '16px', transition: 'transform 0.2s', cursor: 'default' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              {getEquipmentIcon(r.type)}
+                            <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                              {r.images && r.images.length > 0 ? (
+                                <img src={r.images[0]} alt={r.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              ) : (
+                                getEquipmentIcon(r.type)
+                              )}
                             </div>
                             <div style={{ background: isAvailableNow ? '#dcfce7' : '#fee2e2', color: isAvailableNow ? '#16a34a' : '#dc2626', fontSize: '12px', fontWeight: '700', padding: '4px 12px', borderRadius: '100px' }}>
                               {isAvailableNow ? 'Available' : 'Not Available'}
@@ -1113,7 +1119,7 @@ export default function Bookings() {
       {/* Create/Edit Booking Modal */}
       {modal && (
         <div className="modal-overlay" onClick={() => setModal(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: modal === 'select_type' ? '540px' : '820px', transition: 'max-width 0.3s ease' }} onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>
                 {modal === 'select_type' ? 'Select Booking Type' : 
@@ -1122,7 +1128,7 @@ export default function Bookings() {
               </h3>
               <button onClick={() => setModal(null)} className="btn btn-ghost btn-icon">✕</button>
             </div>
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {modal === 'select_type' ? (
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, padding: '20px 0' }}>
                   <div 
@@ -1173,119 +1179,62 @@ export default function Bookings() {
 
               {category === 'EQUIPMENT' ? (
                 <>
-                  <div className="form-group">
-                    <label className="form-label">Full Name *</label>
-<<<<<<< HEAD
-                    <input className="form-input" placeholder="e.g. Kasun Perera" value={form.fullName} onChange={e => setForm(f => ({ ...f, fullName: e.target.value }))} />
-=======
-                    <input className={`form-input ${errors.fullName ? 'error' : ''}`} placeholder="e.g. Kasun Perera" value={form.fullName} onChange={e => { setForm(f => ({ ...f, fullName: e.target.value })); if(errors.fullName) setErrors(err=>({...err, fullName:null})) }} />
-                    {errors.fullName && <div className="form-error-msg">{errors.fullName}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
-                      <label className="form-label">Contact Number *</label>
-<<<<<<< HEAD
-                      <input className="form-input" placeholder="e.g. 071-234-5678" value={form.contactNumber} onChange={e => setForm(f => ({ ...f, contactNumber: e.target.value }))} />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 12 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Full Name *</label>
+                      <input className={`form-input ${errors.fullName ? 'error' : ''}`} placeholder="e.g. Kasun Perera" value={form.fullName} onChange={e => { setForm(f => ({ ...f, fullName: e.target.value })); if(errors.fullName) setErrors(err=>({...err, fullName:null})) }} />
+                      {errors.fullName && <div className="form-error-msg">{errors.fullName}</div>}
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Email Address *</label>
-                      <input type="email" className="form-input" placeholder="e.g. kasun@gmail.com" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-=======
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Contact Number *</label>
                       <input className={`form-input ${errors.contactNumber ? 'error' : ''}`} placeholder="e.g. 071-234-5678" value={form.contactNumber} onChange={e => { setForm(f => ({ ...f, contactNumber: e.target.value })); if(errors.contactNumber) setErrors(err=>({...err, contactNumber:null})) }} />
                       {errors.contactNumber && <div className="form-error-msg">{errors.contactNumber}</div>}
                     </div>
-                    <div className="form-group">
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Email Address *</label>
                       <input type="email" className={`form-input ${errors.email ? 'error' : ''}`} placeholder="e.g. kasun@gmail.com" value={form.email} onChange={e => { setForm(f => ({ ...f, email: e.target.value })); if(errors.email) setErrors(err=>({...err, email:null})) }} />
                       {errors.email && <div className="form-error-msg">{errors.email}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
                     </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Equipment *</label>
-<<<<<<< HEAD
-                      <select className="form-select" value={form.resourceId} onChange={e => setForm(f => ({ ...f, resourceId: e.target.value }))}>
-                        <option value="">Select Equipment</option>
-                        {resources.filter(r => ['Projector', 'Camera', 'Laptop', 'Microphone', 'Speaker', 'Extension Cord'].includes(r.type)).map(r => <option key={r.id} value={r.id}>{r.name} ({r.type})</option>)}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Quantity * {currentAvailable !== null && <span style={{ color: '#64748b', fontSize: 11, fontWeight: 400 }}>(Available: {currentAvailable})</span>}</label>
-                      <input type="number" min="1" max={currentAvailable !== null ? currentAvailable : undefined} className="form-input" value={form.quantity} onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
-=======
                       <select className={`form-select ${errors.resourceId ? 'error' : ''}`} value={form.resourceId} onChange={e => { setForm(f => ({ ...f, resourceId: e.target.value })); if(errors.resourceId) setErrors(err=>({...err, resourceId:null})) }}>
                         <option value="">Select Equipment</option>
-                        {resources.filter(r => ['Projector', 'Camera', 'Laptop', 'Microphone', 'Speaker', 'Extension Cord'].includes(r.type)).map(r => <option key={r.id} value={r.id}>{r.name} ({r.type})</option>)}
+                        {resources.filter(r => r.type === 'EQUIPMENT').map(r => <option key={r.id} value={r.id}>{r.name} ({r.location})</option>)}
                       </select>
                       {errors.resourceId && <div className="form-error-msg">{errors.resourceId}</div>}
                     </div>
-                    <div className="form-group">
-                      <label className="form-label">Quantity * {currentAvailable !== null && <span style={{ color: '#64748b', fontSize: 11, fontWeight: 400 }}>(Available: {currentAvailable})</span>}</label>
-                      <input type="number" min="1" max={currentAvailable !== null ? currentAvailable : undefined} className={`form-input ${errors.quantity ? 'error' : ''}`} value={form.quantity} onChange={e => { setForm(f => ({ ...f, quantity: e.target.value })); if(errors.quantity) setErrors(err=>({...err, quantity:null})) }} />
-                      {errors.quantity && <div className="form-error-msg">{errors.quantity}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
-                      {currentAvailable !== null && parseInt(form.quantity) > currentAvailable && (
-                        <div style={{ color: '#ef4444', fontSize: 11, marginTop: 4 }}>Requested quantity exceeds available stock</div>
-                      )}
-                    </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Quantity *</label>
+                      <input type="number" min="1" max={currentAvailable !== null ? currentAvailable : undefined} className={`form-input ${errors.quantity ? 'error' : ''}`} value={form.quantity} onChange={e => { setForm(f => ({ ...f, quantity: e.target.value })); if(errors.quantity) setErrors(err=>({...err, quantity:null})) }} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">From Date *</label>
-<<<<<<< HEAD
-                      <input type="date" className="form-input" value={form.fromDate} onChange={e => setForm(f => ({ ...f, fromDate: e.target.value }))} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">To Date *</label>
-                      <input type="date" className="form-input" value={form.toDate} onChange={e => setForm(f => ({ ...f, toDate: e.target.value }))} />
-=======
                       <input type="date" className={`form-input ${errors.fromDate ? 'error' : ''}`} value={form.fromDate} onChange={e => { setForm(f => ({ ...f, fromDate: e.target.value })); if(errors.fromDate) setErrors(err=>({...err, fromDate:null})) }} />
-                      {errors.fromDate && <div className="form-error-msg">{errors.fromDate}</div>}
                     </div>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">To Date *</label>
                       <input type="date" className={`form-input ${errors.toDate ? 'error' : ''}`} value={form.toDate} onChange={e => { setForm(f => ({ ...f, toDate: e.target.value })); if(errors.toDate) setErrors(err=>({...err, toDate:null})) }} />
-                      {errors.toDate && <div className="form-error-msg">{errors.toDate}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Pickup *</label>
+                      <input type="time" className={`form-input ${errors.pickupTime ? 'error' : ''}`} value={form.pickupTime} onChange={e => { setForm(f => ({ ...f, pickupTime: e.target.value })); if(errors.pickupTime) setErrors(err=>({...err, pickupTime:null})) }} />
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
-                      <label className="form-label">Pickup Time *</label>
-<<<<<<< HEAD
-                      <input type="time" className="form-input" value={form.pickupTime} onChange={e => setForm(f => ({ ...f, pickupTime: e.target.value }))} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">Return Time *</label>
-                      <input type="time" className="form-input" value={form.returnTime} onChange={e => setForm(f => ({ ...f, returnTime: e.target.value }))} />
-=======
-                      <input type="time" className={`form-input ${errors.pickupTime ? 'error' : ''}`} value={form.pickupTime} onChange={e => { setForm(f => ({ ...f, pickupTime: e.target.value })); if(errors.pickupTime) setErrors(err=>({...err, pickupTime:null})) }} />
-                      {errors.pickupTime && <div className="form-error-msg">{errors.pickupTime}</div>}
-                    </div>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Return Time *</label>
                       <input type="time" className={`form-input ${errors.returnTime ? 'error' : ''}`} value={form.returnTime} onChange={e => { setForm(f => ({ ...f, returnTime: e.target.value })); if(errors.returnTime) setErrors(err=>({...err, returnTime:null})) }} />
-                      {errors.returnTime && <div className="form-error-msg">{errors.returnTime}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Purpose *</label>
+                      <input className={`form-input ${errors.purpose ? 'error' : ''}`} placeholder="e.g. Presentation, Event" value={form.purpose} onChange={e => { setForm(f => ({ ...f, purpose: e.target.value })); if(errors.purpose) setErrors(err=>({...err, purpose:null})) }} />
                     </div>
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Purpose *</label>
-<<<<<<< HEAD
-                    <textarea className="form-textarea" rows={2} placeholder="e.g. Presentation, Event, Project work" value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}></textarea>
-                  </div>
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 8 }}>
-                    <input type="checkbox" id="termsCheckbox" checked={form.termsAccepted} onChange={e => setForm(f => ({ ...f, termsAccepted: e.target.checked }))} style={{ marginTop: 4 }} />
-                    <label htmlFor="termsCheckbox" style={{ fontSize: 13, color: '#475569', lineHeight: 1.4 }}>
-                      <strong>Terms and Conditions *</strong><br/>
-                      I agree to use the equipment responsibly and return it on time. Any damage or loss will be my responsibility.
-                    </label>
-=======
-                    <textarea className={`form-textarea ${errors.purpose ? 'error' : ''}`} rows={2} placeholder="e.g. Presentation, Event, Project work" value={form.purpose} onChange={e => { setForm(f => ({ ...f, purpose: e.target.value })); if(errors.purpose) setErrors(err=>({...err, purpose:null})) }}></textarea>
-                    {errors.purpose && <div className="form-error-msg">{errors.purpose}</div>}
-                  </div>
+
                   <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                       <input type="checkbox" id="termsCheckbox" checked={form.termsAccepted} onChange={e => { setForm(f => ({ ...f, termsAccepted: e.target.checked })); if(errors.termsAccepted) setErrors(err=>({...err, termsAccepted:null})) }} style={{ marginTop: 4 }} />
@@ -1295,115 +1244,70 @@ export default function Bookings() {
                       </label>
                     </div>
                     {errors.termsAccepted && <div className="form-error-msg" style={{ marginLeft: 24 }}>{errors.termsAccepted}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="form-group">
-                    <label className="form-label">Room *</label>
-<<<<<<< HEAD
-                    <select className="form-select" value={form.resourceId} onChange={e => setForm(f => ({ ...f, resourceId: e.target.value }))}>
-                      <option value="">Select a room</option>
-                      {resources.filter(r => !['Projector', 'Camera', 'Laptop', 'Microphone', 'Speaker', 'Extension Cord'].includes(r.type)).map(r => <option key={r.id} value={r.id}>{r.name} — {r.location} (cap: {r.capacity})</option>)}
-                    </select>
-=======
-                    <select className={`form-select ${errors.resourceId ? 'error' : ''}`} value={form.resourceId} onChange={e => { setForm(f => ({ ...f, resourceId: e.target.value })); if(errors.resourceId) setErrors(err=>({...err, resourceId:null})) }}>
-                      <option value="">Select a room</option>
-                      {resources.filter(r => !['Projector', 'Camera', 'Laptop', 'Microphone', 'Speaker', 'Extension Cord'].includes(r.type)).map(r => <option key={r.id} value={r.id}>{r.name} — {r.location} (cap: {r.capacity})</option>)}
-                    </select>
-                    {errors.resourceId && <div className="form-error-msg">{errors.resourceId}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 12 }}>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Room *</label>
+                      <select className={`form-select ${errors.resourceId ? 'error' : ''}`} value={form.resourceId} onChange={e => { setForm(f => ({ ...f, resourceId: e.target.value })); if(errors.resourceId) setErrors(err=>({...err, resourceId:null})) }}>
+                        <option value="">Select a room</option>
+                        {resources.filter(r => r.type !== 'EQUIPMENT').map(r => <option key={r.id} value={r.id}>{r.name} — {r.location} (cap: {r.capacity})</option>)}
+                      </select>
+                      {errors.resourceId && <div className="form-error-msg">{errors.resourceId}</div>}
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label className="form-label">Expected Attendees</label>
+                      <input className={`form-input ${errors.expectedAttendees ? 'error' : ''}`} type="number" min="1" value={form.expectedAttendees} onChange={e => { setForm(f => ({ ...f, expectedAttendees: e.target.value })); if(errors.expectedAttendees) setErrors(err=>({...err, expectedAttendees:null})) }} placeholder="e.g. 50" />
+                      {errors.expectedAttendees && <div className="form-error-msg">{errors.expectedAttendees}</div>}
+                    </div>
                   </div>
+
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">Start Time *</label>
-<<<<<<< HEAD
-                      <input type="datetime-local" className="form-input" value={form.startTime} onChange={e => setForm(f => ({ ...f, startTime: e.target.value }))} />
-                    </div>
-                    <div className="form-group">
-                      <label className="form-label">End Time *</label>
-                      <input type="datetime-local" className="form-input" value={form.endTime} onChange={e => setForm(f => ({ ...f, endTime: e.target.value }))} />
-=======
                       <input type="datetime-local" className={`form-input ${errors.startTime ? 'error' : ''}`} value={form.startTime} onChange={e => { setForm(f => ({ ...f, startTime: e.target.value })); if(errors.startTime) setErrors(err=>({...err, startTime:null})) }} />
-                      {errors.startTime && <div className="form-error-msg">{errors.startTime}</div>}
                     </div>
-                    <div className="form-group">
+                    <div className="form-group" style={{ marginBottom: 0 }}>
                       <label className="form-label">End Time *</label>
                       <input type="datetime-local" className={`form-input ${errors.endTime ? 'error' : ''}`} value={form.endTime} onChange={e => { setForm(f => ({ ...f, endTime: e.target.value })); if(errors.endTime) setErrors(err=>({...err, endTime:null})) }} />
-                      {errors.endTime && <div className="form-error-msg">{errors.endTime}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
                     </div>
                   </div>
-                  <div className="form-group">
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Purpose *</label>
-                    {isAdmin ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      {isAdmin ? (
                         <select
                           className="form-select"
+                          style={{ width: '160px' }}
                           value={form.purpose === 'MAINTENANCE' ? 'MAINTENANCE' : 'OTHER'}
                           onChange={e => setForm(f => ({ ...f, purpose: e.target.value === 'MAINTENANCE' ? 'MAINTENANCE' : '' }))}
                         >
-                          <option value="OTHER">Regular Booking</option>
-                          <option value="MAINTENANCE">Maintenance Block</option>
+                          <option value="OTHER">Regular</option>
+                          <option value="MAINTENANCE">Maint.</option>
                         </select>
-                        {form.purpose !== 'MAINTENANCE' && (
-<<<<<<< HEAD
-                          <input className="form-input" value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))} placeholder="e.g. Lecture, Meeting" />
-                        )}
-                      </div>
-                    ) : (
-                      <input className="form-input" value={form.purpose} onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))} placeholder="e.g. Lecture, Meeting" />
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Expected Attendees</label>
-                    <input className="form-input" type="number" min="1" value={form.expectedAttendees} onChange={e => setForm(f => ({ ...f, expectedAttendees: e.target.value }))} placeholder="e.g. 50" />
-=======
-                          <input className={`form-input ${errors.purpose ? 'error' : ''}`} value={form.purpose} onChange={e => { setForm(f => ({ ...f, purpose: e.target.value })); if(errors.purpose) setErrors(err=>({...err, purpose:null})) }} placeholder="e.g. Lecture, Meeting" />
-                        )}
-                      </div>
-                    ) : (
+                      ) : null}
                       <input className={`form-input ${errors.purpose ? 'error' : ''}`} value={form.purpose} onChange={e => { setForm(f => ({ ...f, purpose: e.target.value })); if(errors.purpose) setErrors(err=>({...err, purpose:null})) }} placeholder="e.g. Lecture, Meeting" />
-                    )}
+                    </div>
                     {errors.purpose && <div className="form-error-msg">{errors.purpose}</div>}
                   </div>
-                  <div className="form-group">
-                    <label className="form-label">Expected Attendees</label>
-                    <input className={`form-input ${errors.expectedAttendees ? 'error' : ''}`} type="number" min="1" value={form.expectedAttendees} onChange={e => { setForm(f => ({ ...f, expectedAttendees: e.target.value })); if(errors.expectedAttendees) setErrors(err=>({...err, expectedAttendees:null})) }} placeholder="e.g. 50" />
-                    {errors.expectedAttendees && <div className="form-error-msg">{errors.expectedAttendees}</div>}
->>>>>>> ddfa36f (Added Booking Management module)
-                    
-                    {isOverCapacity && (
-                      <div style={{ marginTop: 12, padding: '12px', background: '#fef2f2', borderRadius: '12px', border: '1px solid #fee2e2' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b91c1c', fontSize: '13px', fontWeight: '700', marginBottom: 6 }}>
-                          <AlertTriangle size={14} /> Capacity Warning
-                        </div>
-                        <p style={{ fontSize: '12px', color: '#991b1b', margin: 0 }}>
-                          This room only holds <strong>{selectedResource.capacity}</strong> people. Your event has <strong>{form.expectedAttendees}</strong>.
-                        </p>
-                        {recommendedRooms.length > 0 && (
-                          <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #fecaca' }}>
-                            <p style={{ fontSize: '11px', fontWeight: '700', color: '#b91c1c', marginBottom: 6, textTransform: 'uppercase' }}>💡 Smart Suggestions:</p>
-                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                              {recommendedRooms.map(room => (
-                                <button 
-                                  key={room.id}
-                                  onClick={() => setForm(f => ({ ...f, resourceId: room.id }))}
-                                  style={{ background: '#fff', border: '1px solid #fca5a5', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', color: '#b91c1c', cursor: 'pointer' }}
-                                >
-                                  {room.name} (cap: {room.capacity})
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+
+                  {isOverCapacity && (
+                    <div style={{ padding: '12px', background: '#fef2f2', borderRadius: '12px', border: '1px solid #fee2e2' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#b91c1c', fontSize: '13px', fontWeight: '700', marginBottom: 6 }}>
+                        <AlertTriangle size={14} /> Capacity Warning
                       </div>
-                    )}
-                  </div>
-                  <div className="form-group">
+                      <p style={{ fontSize: '12px', color: '#991b1b', margin: 0 }}>
+                        Hold <strong>{selectedResource.capacity}</strong>, requested <strong>{form.expectedAttendees}</strong>.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="form-group" style={{ marginBottom: 0 }}>
                     <label className="form-label">Notes</label>
-                    <textarea className="form-textarea" rows={3} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Any additional notes..." />
+                    <textarea className="form-textarea" rows={2} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder="Any additional notes..." />
                   </div>
                 </>
               )}

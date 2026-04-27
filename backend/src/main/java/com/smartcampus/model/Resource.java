@@ -17,6 +17,7 @@ public class Resource {
     private String description;
     private String availabilityWindows;
     @Builder.Default private ResourceStatus status = ResourceStatus.ACTIVE;
+    @Builder.Default private java.util.List<String> images = new java.util.ArrayList<>();
     @Builder.Default private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime updatedAt;
 }

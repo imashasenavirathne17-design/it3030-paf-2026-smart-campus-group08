@@ -45,6 +45,7 @@ public class ResourceServiceImpl implements ResourceService {
             .description(req.getDescription())
             .availabilityWindows(req.getAvailabilityWindows())
             .status(req.getStatus())
+            .images(req.getImages())
             .build();
         return resourceRepository.save(resource);
     }
@@ -67,6 +68,7 @@ public class ResourceServiceImpl implements ResourceService {
         resource.setDescription(req.getDescription());
         resource.setAvailabilityWindows(req.getAvailabilityWindows());
         resource.setStatus(req.getStatus());
+        resource.setImages(req.getImages());
         resource.setUpdatedAt(LocalDateTime.now());
         return resourceRepository.save(resource);
     }

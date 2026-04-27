@@ -1,20 +1,10 @@
-# Java
-target/
-*.class
-*.jar
-*.war
-*.ear
-
-# Node
 node_modules/
-dist/
+target/
 .env
-
-# IDE
 .vscode/
-.idea/
-*.swp
-*.DS_Store
-
-# Logs
+frontend/node_modules/
+backend/target/
+frontend/dist/
+frontend/coverage/
+*.class
 *.log
