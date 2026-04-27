@@ -10,8 +10,12 @@ public interface ResourceRepository extends MongoRepository<Resource, String> {
     List<Resource> findByTypeIgnoreCase(String type);
     List<Resource> findByLocationContainingIgnoreCase(String location);
     List<Resource> findByCapacityGreaterThanEqual(Integer capacity);
-<<<<<<< HEAD
-=======
+ feature/bookings
     java.util.Optional<Resource> findByName(String name);
->>>>>>> feature/bookings
+
+ HEAD
+
+    java.util.Optional<Resource> findByName(String name);
+ feature/bookings
+ main
 }

@@ -63,8 +63,11 @@ public class NotificationController {
         }
         return ResponseEntity.ok().build();
     }
-<<<<<<< HEAD
-=======
+ feature/bookings
+
+ HEAD
+
+ main
 
     @PutMapping("/broadcast/{broadcastId}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -75,5 +78,8 @@ public class NotificationController {
         }
         return ResponseEntity.ok().build();
     }
->>>>>>> feature/bookings
+ feature/bookings
+
+ feature/bookings
+ main
 }
